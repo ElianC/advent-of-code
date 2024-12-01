@@ -1,4 +1,4 @@
-namespace AdventOfCode._2024.Day01;
+namespace AdventOfCode._2024;
 
 public class Day01 : BaseSolve
 {
