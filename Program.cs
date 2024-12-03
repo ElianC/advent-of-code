@@ -15,7 +15,7 @@ var targetYear = argYear ?? currentYear;
 var targetDay = argDay ?? currentDay;
 
 var assembly = Assembly.GetExecutingAssembly();
-var className = $"AdventOfCode._{targetYear}.Day{targetDay}.Day{targetDay}";
+var className = $"AdventOfCode._{targetYear}.Day{targetDay}.Solution";
 
 var type = assembly.GetType(className);
 
