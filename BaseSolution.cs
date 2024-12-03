@@ -5,7 +5,7 @@ public abstract class BaseSolution
     private readonly string _day;
     private readonly string _year;
 
-    public BaseSolution(string day, string year)
+    protected BaseSolution(string day, string year)
     {
         _day = day;
         _year = year;
@@ -13,7 +13,7 @@ public abstract class BaseSolution
 
     protected string GetInput()
     {
-        var path = Path.Combine(_year, $"Day{_day}", "input.txt");
+        var path = Path.Combine(_year, $"Day{_day}", "Input.txt");
 
         using StreamReader reader = new(path);
         var text = reader.ReadToEnd();
