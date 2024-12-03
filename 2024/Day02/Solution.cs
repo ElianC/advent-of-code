@@ -23,8 +23,7 @@ public class Solution : BaseSolution
             .Count(r =>
                 Enumerable.Range(1, r.Count)
                     .Select(i => r.Take(i - 1).Concat(r.Skip(i)))
-                    .Select(IsListValid)
-                    .Any(b => b));
+                    .Any(IsListValid));
 
         Console.WriteLine($"There are {solution2} reports safe");
     }
