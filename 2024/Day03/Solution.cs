@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode._2024.Day03;
 
-public class Solution : BaseSolve
+public class Solution : BaseSolution
 {
     public Solution(string day, string year) : base(day, year)
     {

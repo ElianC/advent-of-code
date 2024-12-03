@@ -1,6 +1,6 @@
 namespace AdventOfCode._2024.Day02;
 
-public class Solution : BaseSolve
+public class Solution : BaseSolution
 {
     public Solution(string day, string year) : base(day, year)
     {

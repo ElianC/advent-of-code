@@ -1,11 +1,11 @@
 namespace AdventOfCode;
 
-public abstract class BaseSolve
+public abstract class BaseSolution
 {
     private readonly string _day;
     private readonly string _year;
 
-    public BaseSolve(string day, string year)
+    public BaseSolution(string day, string year)
     {
         _day = day;
         _year = year;
