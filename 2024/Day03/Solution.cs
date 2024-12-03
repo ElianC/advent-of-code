@@ -12,33 +12,16 @@ public class Solution : BaseSolution
     {
         var input = GetInput();
 
-        var inputSplittedDont = GetInput().Split("don't()");
-        var input2 = inputSplittedDont[0];
+        var response1 = Regex.Matches(input, @"mul\((\d+),(\d+)\)")
+            .Select(e => int.Parse(e.Groups[1].Value) * int.Parse(e.Groups[2].Value))
+            .Sum();
 
-        foreach (var str in inputSplittedDont)
-        {
-            var strSplit = str.Split("do()", 2);
-
-            if (strSplit.Length > 1) input2 += strSplit[1];
-        }
-
-        var response1 = GetCountMatchMul(input);
-        var response2 = GetCountMatchMul(input2);
+        var response2 = Regex.Matches(input, @"(?:don't\(\)(?:[^d]|d(?!o\(\)))*do\(\))|mul\((\d+),(\d+)\)")
+            .Where(match => !match.Value.StartsWith("don't()"))
+            .Select(e => int.Parse(e.Groups[1].Value) * int.Parse(e.Groups[2].Value))
+            .Sum();
 
         Console.WriteLine($"Result of multiplications: {response1}");
         Console.WriteLine($"Result of multiplications from broken input: {response2}");
-    }
-
-    public int GetCountMatchMul(string input)
-    {
-        var result = 0;
-        foreach (Match match in Regex.Matches(input, @"mul\(\d+,\d+\)"))
-        {
-            var test = Regex.Matches(match.Value, @"(\d+)");
-
-            result += int.Parse(test[0].Value) * int.Parse(test[1].Value);
-        }
-
-        return result;
     }
 }
