@@ -13,7 +13,7 @@ public abstract class BaseSolution
 
     protected string GetInput()
     {
-        var path = Path.Combine(_year, $"Day{_day}", "input.txt");
+        var path = Path.Combine(_year, $"Day{_day}", "Input.txt");
 
         using StreamReader reader = new(path);
         var text = reader.ReadToEnd();
