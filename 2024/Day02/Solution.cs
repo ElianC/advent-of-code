@@ -16,9 +16,12 @@ public class Solution : BaseSolution
             .ToList();
 
         var solution1 = report
-            .Where(r => r.Zip(
-                            r.Skip(1), (f, s) => Math.Abs(f - s) <= 3).All(b => b) &&
-                        (r.SequenceEqual(r.Distinct().Order()) || r.SequenceEqual(r.Distinct().OrderDescending())));
+            .Where(r =>
+                r.Zip(r.Skip(1), (f, s) =>
+                    Math.Abs(f - s) <= 3).All(b => b))
+            .Where(r =>
+                r.SequenceEqual(r.Distinct().Order()) ||
+                r.SequenceEqual(r.Distinct().OrderDescending()));
         Console.WriteLine($"There are {solution1.Count()} reports safe");
 
         var solution2 = report
@@ -26,10 +29,10 @@ public class Solution : BaseSolution
             {
                 var isValid = false;
 
-                for (var i = -1; i < r.Count; i++)
+                for (var i = 0; i < r.Count; i++)
                 {
                     var truncatedList = r.ToList();
-                    if (i >= 0) truncatedList.RemoveAt(i);
+                    truncatedList.RemoveAt(i);
 
                     var isAscValid = truncatedList
                         .Zip(
