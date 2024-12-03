@@ -15,43 +15,30 @@ public class Solution : BaseSolution
             .Select(e => e.Split(" ").Select(int.Parse).ToList())
             .ToList();
 
-        var solution1 = report
-            .Where(r =>
-                r.Zip(r.Skip(1), (f, s) =>
-                    Math.Abs(f - s) <= 3).All(b => b))
-            .Where(r =>
-                r.SequenceEqual(r.Distinct().Order()) ||
-                r.SequenceEqual(r.Distinct().OrderDescending()));
-        Console.WriteLine($"There are {solution1.Count()} reports safe");
+        var solution1 = report.Count(IsListValid);
+
+        Console.WriteLine($"There are {solution1} reports safe");
 
         var solution2 = report
-            .Where(r =>
-            {
-                var isValid = false;
+            .Count(r =>
+                Enumerable.Range(1, r.Count)
+                    .Select(i => r.Take(i - 1).Concat(r.Skip(i)))
+                    .Select(IsListValid)
+                    .Any(b => b));
 
-                for (var i = 0; i < r.Count; i++)
-                {
-                    var truncatedList = r.ToList();
-                    truncatedList.RemoveAt(i);
+        Console.WriteLine($"There are {solution2} reports safe");
+    }
 
-                    var isAscValid = truncatedList
-                        .Zip(
-                            truncatedList.Skip(1),
-                            (f, s) => Math.Abs(f - s) <= 3 && f < s)
-                        .All(b => b);
-                    var isDescValid = truncatedList
-                        .Zip(
-                            truncatedList.Skip(1),
-                            (f, s) => Math.Abs(f - s) <= 3 && f > s)
-                        .All(b => b);
+    private static bool IsListValid(IEnumerable<int> list)
+    {
+        list = list.ToList();
+        var hasDistanceInferiorTo3 = list
+            .Zip(list.Skip(1), (f, s) =>
+                Math.Abs(f - s) <= 3)
+            .All(b => b);
 
-                    isValid = isAscValid || isDescValid;
-                    if (isValid) break;
-                }
-
-                return isValid;
-            });
-
-        Console.WriteLine($"There are {solution2.Count()} reports safe");
+        var isListAsc = list.SequenceEqual(list.Distinct().Order());
+        var isListDesc = list.SequenceEqual(list.Distinct().OrderDescending());
+        return hasDistanceInferiorTo3 && (isListAsc || isListDesc);
     }
 }
