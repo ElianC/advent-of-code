@@ -6,13 +6,13 @@ IConfiguration config = new ConfigurationBuilder()
     .Build();
 
 var currentYear = DateTime.Now.Year.ToString();
-var currentDay = DateTime.Now.Day.ToString("00");
+var currentDay = DateTime.Now.Day;
 
 var argYear = config["year"];
-var argDay = config["day"];
+int.TryParse(config["day"], out var argDay);
 
 var targetYear = argYear ?? currentYear;
-var targetDay = argDay ?? currentDay;
+var targetDay = (argDay > 0 ? argDay : currentDay).ToString("00");
 
 var assembly = Assembly.GetExecutingAssembly();
 var className = $"AdventOfCode._{targetYear}.Day{targetDay}.Solution";
@@ -21,7 +21,7 @@ var type = assembly.GetType(className);
 
 if (type is null)
 {
-    Console.WriteLine($"Class '{className}' not found.");
+    Console.WriteLine($"The class for the day {targetDay} of year {targetYear} was not found. '{className}'");
     return;
 }
 
@@ -37,7 +37,8 @@ var method = type.GetMethod("Solve");
 
 if (method == null)
 {
-    Console.WriteLine($"Method 'Solve' not found in class '{className}'.");
+    Console.WriteLine(
+        $"Method 'Solve' not found in class '{className}'. Ensure that the class extend the class BaseSolution");
     return;
 }
 
