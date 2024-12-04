@@ -62,7 +62,6 @@ public class Solution : BaseSolution
             .Select(dir =>
             {
                 if (inputs[y][x] is not 'A') return false;
-                //Console.WriteLine("{0} {1} {2} ", dir, x, y);
 
                 var dir1 = _dir[dir];
                 var dir2 = _dir[dir];
@@ -118,19 +117,11 @@ public class Solution : BaseSolution
                         break;
                 }
 
-                /*
-                var x1 = x + dir3.Item1;
-                var y1 = y + dir3.Item2;
-                */
-
                 var isFirstMas = IsMas(inputs, dir1, x1, y1, maxY, maxX);
                 var isSecondMas = IsMas(inputs, dir2, x2, y2, maxY, maxX);
                 var isThirdMas = IsMas(inputs, dir3, x3, y3, maxY, maxX);
-                var iXsMas = isFirstMas && (isSecondMas || isThirdMas);
-
-                if (iXsMas) Console.WriteLine("{0} {1} {2} {3} {4}", dir, x, y, x1, y1);
-                return iXsMas;
-            }).Any(e=>e);
+                return isFirstMas && (isSecondMas || isThirdMas);
+            }).Any(e => e);
 
         if (!test) return 0;
         return 1;
@@ -141,7 +132,8 @@ public class Solution : BaseSolution
         var input = GetInput();
 
         var inputs = input.Split("\n")
-            .Select(e => e.Select(c => c).ToArray()).ToArray();
+            .Select(e => e.Select(c => c).ToArray())
+            .ToArray();
 
         var countRows = inputs.Length;
         var countCols = inputs[0].Length;
@@ -157,7 +149,7 @@ public class Solution : BaseSolution
         }
 
 
-        Console.WriteLine($"{result1}");
+        Console.WriteLine($"result1 {result1}");
         Console.WriteLine($"result2 {result2}");
     }
 }
