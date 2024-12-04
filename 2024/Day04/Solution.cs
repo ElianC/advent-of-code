@@ -1,11 +1,45 @@
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode._2024.Day04;
 
 public class Solution : BaseSolution
 {
+    private readonly Dictionary<string, (int, int)> _dir = new();
+
     public Solution(string day, string year) : base(day, year)
     {
+        _dir.Add("up", (0, -1));
+        _dir.Add("down", (0, 1));
+        _dir.Add("right", (1, 0));
+        _dir.Add("left", (-1, 0));
+        _dir.Add("up-right", (1, -1));
+        _dir.Add("down-right", (1, 1));
+        _dir.Add("down-left", (-1, 1));
+        _dir.Add("up-left", (-1, -1));
+    }
+
+    private int Search(char[][] inputs, int x, int y)
+    {
+        var count = 0;
+        var boundX = inputs[0].Length;
+        var boundY = inputs.Length;
+
+        foreach (var (dirX, dirY) in _dir.Values.ToArray())
+        {
+            var seq = Enumerable.Range(0, 4)
+                .Select(i =>
+                {
+                    var posX = x + dirX * i;
+                    var posY = y + dirY * i;
+
+                    if (posX >= 0 && posX < boundX && posY >= 0 && posY < boundY)
+                        return inputs[posY][posX];
+                    return '_';
+                }).ToArray();
+            var str = new string(seq);
+
+            if (str is "XMAS") count++;
+        }
+
+        return count;
     }
 
     public override void Solve()
@@ -13,68 +47,17 @@ public class Solution : BaseSolution
         var input = GetInput();
 
         var inputs = input.Split("\n")
-            .Select(e => e.Split("")).ToArray();
+            .Select(e => e.Select(c => c).ToArray()).ToArray();
 
-        var rows = inputs.Select(e => string.Join("", e).ToList()).ToList();
+        var countRows = inputs.Length;
+        var countCols = inputs[0].Length;
 
-        var cols = Enumerable.Range(0, rows[0].Count)
-            .Select(i => Enumerable.Range(0, rows.Count)
-                .Select(e => rows[e][i]).Select(e=>string.Join("", e))).ToList();
-        
+        var result = 0;
 
-        //Console.WriteLine($"{cols[1]}");
-        Console.WriteLine(string.Join("", cols[1]));
-      
-        var diags = Enumerable.Range(0, rows[0].Count)
-            .Select(i =>
-            {
-                var x = i;
-                
-                return Enumerable.Range(0, rows.Count)
-                    .Select(e =>
-                    {
-                        var y = e;
+        for (var i = 0; i < countRows; i++)
+        for (var j = 0; j < countCols; j++)
+            result += Search(inputs, i, j);
 
-                        if (x < rows[0].Count && y < rows.Count && x < rows[x][y] && y < rows[x][y])
-                        {
-                            var res=  rows[x][y];
-
-                            y++;
-                            x++;
-                            
-                            return res;
-                        }
-
-                        return 'Z';
-                    });
-            }).ToArray();
-        Console.WriteLine(string.Join("", diags[2]));
-        /*
-
-var colsLenght = rows[0].Split("").Length;
-
-string[,] cols = new string[colsLenght,rows.Count];
-
-for (int row = 0; row < rows.Count; row++)
-{
-    for (int col = 0; col < colsLenght; col++)
-    {
-
-        cols[col, row] = rows.Select(e => e.Split("")).ToArray()[row][col];
-        //cols[col] += rows[row][col];
-    }
-}
-
-var count = 0;
-
-Console.WriteLine($"{cols[0,0]}");
-var regex = new Regex("XMAS|SAMX");
-
-var countRows= rows
-    .Select(row => regex.Match(row))
-    .Select(match => match.Length)
-    .Sum();
-        Console.WriteLine($"2024 - Day 4 {countRows}");
-*/
+        Console.WriteLine($"{result}");
     }
 }
