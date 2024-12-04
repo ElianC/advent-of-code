@@ -43,9 +43,9 @@ public class Solution : BaseSolution
         return str == searchStr;
     }
 
-    private int GetCountOccurrencesCruiseMas(char[][] inputs, int y, int x)
+    private int IsThereACross(char[][] inputs, int y, int x)
     {
-        var test = _dir.Keys
+        var hasCross = _dir.Keys
             .Skip(4)
             .Select(dir =>
             {
@@ -111,15 +111,14 @@ public class Solution : BaseSolution
                 return isFirstMas && (isSecondMas || isThirdMas);
             }).Any(e => e);
 
-        if (!test) return 0;
-        return 1;
+        return hasCross ? 0 : 1;
     }
 
     public override void Solve()
     {
         var input = GetInput();
 
-        var inputs = input.Split("\n")
+        var inputs = input.Split(Environment.NewLine)
             .Select(e => e.Select(c => c).ToArray())
             .ToArray();
 
@@ -133,7 +132,7 @@ public class Solution : BaseSolution
         for (var x = 0; x < countCols; x++)
         {
             result1 += GetCountOccurrencesXmas(inputs, y, x);
-            result2 += GetCountOccurrencesCruiseMas(inputs, y, x);
+            result2 += IsThereACross(inputs, y, x);
         }
 
         Console.WriteLine($"result1 {result1}");
