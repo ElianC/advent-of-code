@@ -18,26 +18,17 @@ public class Solution : BaseSolution
 
     private int GetCountOccurrencesXmas(char[][] inputs, int x, int y)
     {
+        return _dir.Values
+            .Select(dirs => IsStringInsideMatrix(inputs, "XMAS", dirs, x, y))
+            .Count(e => e);
+    }
+
+    private static bool IsStringInsideMatrix(char[][] inputs, string searchStr, (int, int) dirs, int x, int y)
+    {
         var maxX = inputs[0].Length;
         var maxY = inputs.Length;
 
-        return _dir.Values.Select(dirs => Enumerable.Range(0, 4)
-                .Select(i =>
-                {
-                    var posX = x + dirs.Item1 * i;
-                    var posY = y + dirs.Item2 * i;
-
-                    if (posX >= 0 && posX < maxX && posY >= 0 && posY < maxY)
-                        return inputs[posY][posX];
-                    return ' ';
-                }).ToArray())
-            .Select(c => new string(c))
-            .Count(e => e == "XMAS");
-    }
-
-    public bool IsMas(char[][] inputs, (int, int) dirs, int x, int y, int maxY, int maxX)
-    {
-        var seq = Enumerable.Range(0, 3).Select(i =>
+        var seq = Enumerable.Range(0, searchStr.Length).Select(i =>
         {
             var posX = x + dirs.Item1 * i;
             var posY = y + dirs.Item2 * i;
@@ -49,14 +40,11 @@ public class Solution : BaseSolution
 
         var str = new string(seq);
 
-        return str == "MAS";
+        return str == searchStr;
     }
 
-    public int GetCountOccurrencesCruiseMas(char[][] inputs, int y, int x)
+    private int GetCountOccurrencesCruiseMas(char[][] inputs, int y, int x)
     {
-        var maxX = inputs[0].Length;
-        var maxY = inputs.Length;
-
         var test = _dir.Keys
             .Skip(4)
             .Select(dir =>
@@ -117,9 +105,9 @@ public class Solution : BaseSolution
                         break;
                 }
 
-                var isFirstMas = IsMas(inputs, dir1, x1, y1, maxY, maxX);
-                var isSecondMas = IsMas(inputs, dir2, x2, y2, maxY, maxX);
-                var isThirdMas = IsMas(inputs, dir3, x3, y3, maxY, maxX);
+                var isFirstMas = IsStringInsideMatrix(inputs, "MAS", dir1, x1, y1);
+                var isSecondMas = IsStringInsideMatrix(inputs, "MAS", dir2, x2, y2);
+                var isThirdMas = IsStringInsideMatrix(inputs, "MAS", dir3, x3, y3);
                 return isFirstMas && (isSecondMas || isThirdMas);
             }).Any(e => e);
 
@@ -147,7 +135,6 @@ public class Solution : BaseSolution
             result1 += GetCountOccurrencesXmas(inputs, y, x);
             result2 += GetCountOccurrencesCruiseMas(inputs, y, x);
         }
-
 
         Console.WriteLine($"result1 {result1}");
         Console.WriteLine($"result2 {result2}");
