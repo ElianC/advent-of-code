@@ -57,51 +57,83 @@ public class Solution : BaseSolution
         var maxX = inputs[0].Length;
         var maxY = inputs.Length;
 
-        return _dir.Keys.Skip(4).Select(dir =>
-        {
-            var dir1 = _dir[dir];
-            var dir2 = _dir[dir];
-            var dir3 = _dir[dir];
-            var x2 = x;
-            var y3 = y;
-
-            switch (dir)
+        var test = _dir.Keys
+            .Skip(4)
+            .Select(dir =>
             {
-                case "up-left":
-                    dir2 = _dir["up-right"];
-                    dir3 = _dir["down-right"];
-                    x2 -= 2;
-                    y3 -= 2;
-                    break;
-                case "up-right":
-                    dir2 = _dir["up-left"];
-                    dir3 = _dir["down-left"];
-                    x2 += 2;
-                    y3 -= 2;
-                    break;
-                case "down-left":
-                    dir2 = _dir["down-right"];
-                    dir3 = _dir["up-left"];
-                    x2 -= 2;
-                    y3 += 2;
-                    break;
-                case "down-right":
-                    dir2 = _dir["down-left"];
-                    dir3 = _dir["up-right"];
-                    x2 += 2;
-                    y3 += 2;
-                    break;
-            }
+                if (inputs[y][x] is not 'A') return false;
+                //Console.WriteLine("{0} {1} {2} ", dir, x, y);
 
-            var isFirstMas = IsMas(inputs, dir1, x, y, maxY, maxX);
-            var isSecondMas = IsMas(inputs, dir2, x2, y, maxY, maxX);
-            var isThirdMas = IsMas(inputs, dir3, x, y3, maxY, maxX);
-            var iXsMas = isFirstMas && (isSecondMas || isThirdMas);
+                var dir1 = _dir[dir];
+                var dir2 = _dir[dir];
+                var dir3 = _dir[dir];
+                var x1 = x;
+                var y1 = y;
+                var x2 = x;
+                var y2 = y;
+                var x3 = x;
+                var y3 = y;
 
-            if (iXsMas) inputs[y][x] = ' ';
+                switch (dir)
+                {
+                    case "up-left":
+                        dir2 = _dir["up-right"];
+                        dir3 = _dir["down-left"];
+                        x1 += 1;
+                        y1 += 1;
+                        x2 -= 1;
+                        y2 += 1;
+                        x3 += 1;
+                        y3 -= 1;
+                        break;
+                    case "up-right":
+                        dir2 = _dir["up-left"];
+                        dir3 = _dir["down-right"];
+                        x1 -= 1;
+                        y1 += 1;
+                        x2 += 1;
+                        y2 += 1;
+                        x3 -= 1;
+                        y3 -= 1;
+                        break;
+                    case "down-left":
+                        dir2 = _dir["down-right"];
+                        dir3 = _dir["up-left"];
+                        x1 += 1;
+                        y1 -= 1;
+                        x2 -= 1;
+                        y2 -= 1;
+                        y3 += 1;
+                        x3 += 1;
+                        break;
+                    case "down-right":
+                        dir2 = _dir["down-left"];
+                        dir3 = _dir["up-right"];
+                        x1 -= 1;
+                        y1 -= 1;
+                        x2 += 1;
+                        y2 -= 1;
+                        x3 -= 1;
+                        y3 += 1;
+                        break;
+                }
 
-            return iXsMas;
-        }).Count(e => e);
+                /*
+                var x1 = x + dir3.Item1;
+                var y1 = y + dir3.Item2;
+                */
+
+                var isFirstMas = IsMas(inputs, dir1, x1, y1, maxY, maxX);
+                var isSecondMas = IsMas(inputs, dir2, x2, y2, maxY, maxX);
+                var isThirdMas = IsMas(inputs, dir3, x3, y3, maxY, maxX);
+                var iXsMas = isFirstMas && (isSecondMas || isThirdMas);
+
+                if (iXsMas) Console.WriteLine("{0} {1} {2} {3} {4}", dir, x, y, x1, y1);
+                return iXsMas;
+            }).Any(e=>e);
+
+        if (!test) return 0;
+        return 1;
     }
 
     public override void Solve()
@@ -124,7 +156,8 @@ public class Solution : BaseSolution
             result2 += GetCountOccurrencesCruiseMas(inputs, y, x);
         }
 
+
         Console.WriteLine($"{result1}");
-        Console.WriteLine($"{result2}");
+        Console.WriteLine($"result2 {result2}");
     }
 }
