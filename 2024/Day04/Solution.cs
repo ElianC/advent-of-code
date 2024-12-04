@@ -18,28 +18,21 @@ public class Solution : BaseSolution
 
     private int Search(char[][] inputs, int x, int y)
     {
-        var count = 0;
-        var boundX = inputs[0].Length;
-        var boundY = inputs.Length;
+        var maxX = inputs[0].Length;
+        var maxY = inputs.Length;
 
-        foreach (var (dirX, dirY) in _dir.Values.ToArray())
-        {
-            var seq = Enumerable.Range(0, 4)
+        return _dir.Values.Select(dirs => Enumerable.Range(0, 4)
                 .Select(i =>
                 {
-                    var posX = x + dirX * i;
-                    var posY = y + dirY * i;
+                    var posX = x + dirs.Item1 * i;
+                    var posY = y + dirs.Item2 * i;
 
-                    if (posX >= 0 && posX < boundX && posY >= 0 && posY < boundY)
+                    if (posX >= 0 && posX < maxX && posY >= 0 && posY < maxY)
                         return inputs[posY][posX];
                     return '_';
-                }).ToArray();
-            var str = new string(seq);
-
-            if (str is "XMAS") count++;
-        }
-
-        return count;
+                }).ToArray())
+            .Select(c => new string(c))
+            .Count(e => e == "XMAS");
     }
 
     public override void Solve()
