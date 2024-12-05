@@ -6,27 +6,6 @@ public class Solution : BaseSolution
     {
     }
 
-    private static int[] SortArrayInSpecificOrder(int[] input, int mustBeBefore, int mustBeAfter)
-    {
-        var output = (int[]) input.Clone();
-        
-        if (!input.Contains(mustBeBefore) || !input.Contains(mustBeAfter)) return input;
-        
-        var indexMustBeBefore = Array.IndexOf(input, mustBeBefore);
-        var indexMustBeAfter = Array.IndexOf(input, mustBeAfter);
-        
-        
-        if (indexMustBeBefore > indexMustBeAfter)
-        {
-            output[indexMustBeAfter] = mustBeBefore;
-            output[indexMustBeBefore] = mustBeAfter;
-        }
-
-        //Console.WriteLine($"{indexMustBeBefore} {indexMustBeAfter} inccorect ordre {string.Join(",", input)}, correct: {string.Join(",", output)}");
-
-        return output;
-    }
-    
     private static bool CheckIfArrayIsInSpecificOrder(int[] input, int mustBeBefore, int mustBeAfter)
     {
         if (!input.Contains(mustBeBefore) || !input.Contains(mustBeAfter)) return true;
@@ -56,6 +35,7 @@ public class Solution : BaseSolution
 
         foreach (var updatePages in updatesPages)
         {
+            
             List<bool> arrayCorrectOrder = new();
             var arrayToSort = updatePages.ToList();
             
@@ -63,24 +43,6 @@ public class Solution : BaseSolution
             {
                 var isInCorrectOrder = CheckIfArrayIsInSpecificOrder(updatePages, orderingRule[0], orderingRule[1]);
                 arrayCorrectOrder.Add(isInCorrectOrder);
-                
-                /*if (!isInCorrectOrder)
-                {
-                    var mustBeBefore = orderingRule[0];
-                    var mustBeAfter = orderingRule[1];
-                    
-                    if (!arrayToSort.Contains(mustBeBefore) || !arrayToSort.Contains(mustBeAfter)) continue;
-                  
-                    var indexMustBeBefore = arrayToSort.IndexOf(mustBeBefore);
-                    var indexMustBeAfter = arrayToSort.IndexOf(mustBeAfter);
-        
-                    if (indexMustBeBefore > indexMustBeAfter)
-                    {
-                        arrayToSort.Insert(indexMustBeBefore + 1, mustBeAfter);
-                        arrayToSort.RemoveAt(indexMustBeAfter);
-                    }
-
-                }*/
             }
 
             if (arrayCorrectOrder.All(b => b))
@@ -89,9 +51,9 @@ public class Solution : BaseSolution
             }
             else
             {
-                Console.WriteLine($"inccorect ordre {string.Join(",", updatePages)}, correct: {string.Join(",", arrayToSort)}");
-                //arrayToSort.Reverse();
-                arrayToSort.Sort((e, f) => orderingRules.Any(x => x[0] == e && x[1] == f) ? 1 : -1);
+                arrayToSort
+                    .Sort((left, right) => orderingRules
+                        .Any(rule => rule[0] == left && rule[1] == right) ? 1 : -1);
                 
                 solution2 += arrayToSort[(arrayToSort.Count - 1) / 2];
             }
