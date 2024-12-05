@@ -57,29 +57,30 @@ public class Solution : BaseSolution
         foreach (var updatePages in updatesPages)
         {
             List<bool> arrayCorrectOrder = new();
-            var arrayToSort = (int[]) updatePages.Clone();
+            var arrayToSort = updatePages.ToList();
             
-            foreach (var orderingRule in orderingRules)
+            foreach (var orderingRule in orderingRules.Reverse())
             {
                 var isInCorrectOrder = CheckIfArrayIsInSpecificOrder(updatePages, orderingRule[0], orderingRule[1]);
                 arrayCorrectOrder.Add(isInCorrectOrder);
                 
-                if (!isInCorrectOrder)
+                /*if (!isInCorrectOrder)
                 {
                     var mustBeBefore = orderingRule[0];
                     var mustBeAfter = orderingRule[1];
                     
                     if (!arrayToSort.Contains(mustBeBefore) || !arrayToSort.Contains(mustBeAfter)) continue;
-                    
-                    var indexMustBeBefore = Array.IndexOf(arrayToSort, mustBeBefore);
-                    var indexMustBeAfter = Array.IndexOf(arrayToSort, mustBeAfter);
+                  
+                    var indexMustBeBefore = arrayToSort.IndexOf(mustBeBefore);
+                    var indexMustBeAfter = arrayToSort.IndexOf(mustBeAfter);
         
                     if (indexMustBeBefore > indexMustBeAfter)
                     {
-                        arrayToSort[indexMustBeAfter] = mustBeBefore;
-                        arrayToSort[indexMustBeBefore] = mustBeAfter;
+                        arrayToSort.Insert(indexMustBeBefore + 1, mustBeAfter);
+                        arrayToSort.RemoveAt(indexMustBeAfter);
                     }
-                }
+
+                }*/
             }
 
             if (arrayCorrectOrder.All(b => b))
@@ -89,7 +90,10 @@ public class Solution : BaseSolution
             else
             {
                 Console.WriteLine($"inccorect ordre {string.Join(",", updatePages)}, correct: {string.Join(",", arrayToSort)}");
-                solution2 += arrayToSort[(arrayToSort.Length - 1) / 2];
+                //arrayToSort.Reverse();
+                arrayToSort.Sort((e, f) => orderingRules.Any(x => x[0] == e && x[1] == f) ? 1 : -1);
+                
+                solution2 += arrayToSort[(arrayToSort.Count - 1) / 2];
             }
         }
         
