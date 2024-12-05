@@ -5,7 +5,7 @@ public abstract class BaseSolution
     private readonly string _day;
     private readonly string _year;
 
-    public BaseSolution(string day, string year)
+    protected BaseSolution(string day, string year)
     {
         _day = day;
         _year = year;
