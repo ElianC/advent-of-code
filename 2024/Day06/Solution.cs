@@ -10,84 +10,81 @@ public class Solution : BaseSolution
         (Directions.Left, "<")
     ];
 
-    private readonly HashSet<(int x, int y)> _visitedCells = new();
-
     public Solution(string day, string year) : base(day, year)
     {
     }
 
-    private Directions GetNextDirection(Directions direction)
+    private Directions GetNextDirection(Directions dir)
     {
-        return direction switch
+        return dir switch
         {
             Directions.Forward => Directions.Right,
             Directions.Right => Directions.Backward,
             Directions.Backward => Directions.Left,
-            Directions.Left => Directions.Forward
+            Directions.Left => Directions.Forward,
+            _ => throw new ArgumentOutOfRangeException(nameof(dir), dir, null)
         };
     }
 
-    private static (int x, int y, string value)? GetNextCellInfos(Directions direction, List<List<string>> input,
-        int currX, int currY)
+    private static ((int x, int y) pos, string cell)? GetNextCellInfos(
+        List<List<string>> input, (int x, int y) pos, Directions dir)
     {
-        var boundY = input.Count - 1;
-        var boundX = input[0].Count - 1;
-        var nextY = currY;
-        var nextX = currX;
+        (int x, int y) boundaries = (input[0].Count - 1, input.Count - 1);
+        var nextPos = pos;
 
-        switch (direction)
+        switch (dir)
         {
             case Directions.Forward:
-                nextY--;
-                if (nextY < 0) return null;
+                nextPos.y--;
+                if (nextPos.y < 0) return null;
                 break;
             case Directions.Right:
-                nextX++;
-                if (nextX > boundX) return null;
+                nextPos.x++;
+                if (nextPos.x > boundaries.x) return null;
                 break;
             case Directions.Backward:
-                nextY++;
-                if (nextY > boundY) return null;
+                nextPos.y++;
+                if (nextPos.y > boundaries.y) return null;
                 break;
             case Directions.Left:
-                nextX--;
-                if (nextX < 0) return null;
+                nextPos.x--;
+                if (nextPos.x < 0) return null;
                 break;
         }
 
-        return (nextX, nextY, input[nextY][nextX]);
+        return (nextPos, input[nextPos.y][nextPos.x]);
     }
 
-    private void DoGuardRound(Directions startDirection, List<List<string>> input, int startX, int startY,
-        bool keepTrackVisitedCells = false)
+    private List<(int x, int y)> DoGuardRound(List<List<string>> input, (int x, int y) startPos, Directions startDir)
     {
-        var currentDirection = startDirection;
-        var guardX = startX;
-        var guardY = startY;
+        var guardDir = startDir;
+        var guardPos = startPos;
 
-        HashSet<(Directions dir, int x, int y)> isAlreadyBeenHere = new();
+        HashSet<(Directions dir, (int x, int y) pos)> visitedCells = [];
 
         do
         {
-            var nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
+            if (!visitedCells.Add((guardDir, guardPos)))
+                throw new Exception(
+                    "Guard has already patrolled here, he must going around in circles.");
 
-            if (nextCell is not null)
-                if (!isAlreadyBeenHere.Add((currentDirection, guardX, guardY)))
-                    throw new Exception(
-                        $"Guard has already patrolled here, he must going around in circles. {guardX} {guardY}");
-            while (nextCell is not null && nextCell.Value.value == "#")
+            var nextCell = GetNextCellInfos(input, guardPos, guardDir);
+
+            while (nextCell is { cell: "#" })
             {
-                currentDirection = GetNextDirection(currentDirection);
-                nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
+                guardDir = GetNextDirection(guardDir);
+                nextCell = GetNextCellInfos(input, guardPos, guardDir);
             }
 
             if (nextCell is null) break;
 
-            guardX = nextCell.Value.x;
-            guardY = nextCell.Value.y;
-
-            if (keepTrackVisitedCells) _visitedCells.Add((guardX, guardY));
+            guardPos = nextCell.Value.pos;
         } while (true);
+
+        return visitedCells
+            .Select(e => e.pos)
+            .Distinct()
+            .ToList();
     }
 
     public override void Solve()
@@ -97,40 +94,36 @@ public class Solution : BaseSolution
             .Select(row => row.Select(e => e.ToString()).ToList())
             .ToList();
 
-        var solution1 = 0;
-        var solution2 = 0;
+        var guardPos = input
+            .Select((row, y) => (x: row.FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)), y))
+            .Single(pos => pos is { x: >= 0, y: >= 0 });
 
-        var guardY = input.FindIndex(row =>
-            row.Any(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)));
-        var guardX = input[guardY].FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell));
-
-        var currentDirection = _cellGuardMatchDirection
-            .Where(e => e.Item2 == input[guardY][guardX])
+        var guardDir = _cellGuardMatchDirection
+            .Where(e => e.Item2 == input[guardPos.y][guardPos.x])
             .Select(e => e.Item1)
             .Single();
 
-        _visitedCells.Add((guardX, guardY));
+        var visitedCells = DoGuardRound(input, guardPos, guardDir);
 
-        DoGuardRound(currentDirection, input, guardX, guardY, true);
+        var solution1 = visitedCells.Count;
+        var solution2 = 0;
 
-        foreach (var visited in _visitedCells)
+        foreach (var visited in visitedCells)
         {
             var localInput = new List<List<string>>(input.Select(e => e.ToList()));
 
-            if (visited.x == guardX && visited.y == guardY) continue;
+            if (visited.Equals(guardPos)) continue;
             localInput[visited.y][visited.x] = "#";
 
             try
             {
-                DoGuardRound(currentDirection, localInput, guardX, guardY);
+                DoGuardRound(localInput, guardPos, guardDir);
             }
             catch (Exception)
             {
                 solution2++;
             }
         }
-
-        solution1 += _visitedCells.Count;
 
         Console.WriteLine($"Solution 1: {solution1}");
         Console.WriteLine($"Solution 2: {solution2}");
