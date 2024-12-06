@@ -69,13 +69,24 @@ public class Solution : BaseSolution
         var guardX = startX;
         var guardY = startY;
         
+        HashSet<(Directions directions,int x, int y)> isAlreadyBeenHere = new();
+        isAlreadyBeenHere.Add((currentDirection, guardX, guardY));
+        
         do
         {
             var nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
             
             while (nextCell is not null && nextCell.Value.value == "#")
             {
+                if (!isAlreadyBeenHere.Add((currentDirection, guardX, guardY)))
+                {
+                    Console.WriteLine((startX, startY));
+                    Console.WriteLine((currentDirection, guardX, guardY));
+                    throw new Exception("Guard already been here.");
+                }
+                
                 currentDirection = GetNextDirection(currentDirection);
+                
                 nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
             }
             
@@ -114,7 +125,7 @@ public class Solution : BaseSolution
 
         GuardRound(currentDirection, input, guardX, guardY, true);
 
-        /*foreach (var visited in _visitedCells)
+        foreach (var visited in _visitedCells)
         {
             var _input = input.ToList();
             _input[visited.y][visited.x] = "#";
@@ -123,13 +134,12 @@ public class Solution : BaseSolution
             {
                 GuardRound(currentDirection, _input, guardX, guardY);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e);
                 solution2++;
             }
             
-        }*/
+        }
 
         solution1 += _visitedCells.Count;
         
