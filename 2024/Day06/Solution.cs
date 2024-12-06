@@ -6,13 +6,15 @@ public class Solution : BaseSolution
     {
     }
 
-    enum Directions
+    private enum Directions
     {
         Forward,
         Right,
         Backward,
         Left,
     }
+    
+    private readonly HashSet<(int x, int y)> _visitedCells = new();
 
     private readonly List<(Directions, string)> _cellGuardMatchDirection = [
         (Directions.Forward, "^"),
@@ -60,34 +62,18 @@ public class Solution : BaseSolution
         
         return (nextX, nextY, input[nextY][nextX]);
     }
-    
-    public override void Solve()
+
+    private void GuardRound(Directions startDirection, List<List<string>> input, int startX, int startY, bool keepTrackVisitedCells = false)
     {
-        var input = GetInput()
-            .Split(Environment.NewLine)
-            .Select(row => row.Select(e => e.ToString()).ToList())
-            .ToList();
-
-        var solution1 = 0;
+        var currentDirection = startDirection;
+        var guardX = startX;
+        var guardY = startY;
         
-        var guardY = input.FindIndex(row => 
-            row.Any(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)));
-        var guardX = input[guardY].FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell));
-        
-        var currentDirection = _cellGuardMatchDirection
-            .Where(e => e.Item2 == input[guardY][guardX])
-            .Select(e => e.Item1)
-            .Single();
-        
-        HashSet<(int x, int y)> visited = [
-            (guardX, guardY)
-        ];
-
         do
         {
             var nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
-
-            if (nextCell is not null && nextCell.Value.value == "#")
+            
+            while (nextCell is not null && nextCell.Value.value == "#")
             {
                 currentDirection = GetNextDirection(currentDirection);
                 nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
@@ -97,12 +83,57 @@ public class Solution : BaseSolution
 
             guardX = nextCell.Value.x;
             guardY = nextCell.Value.y;
-            
-            visited.Add((guardX, guardY));
-        } while (true);
 
-        solution1 += visited.Count;
+            if (keepTrackVisitedCells)
+            {
+                _visitedCells.Add((guardX, guardY));
+            }
+        } while (true);
+    }
+    
+    public override void Solve()
+    {
+        var input = GetInput()
+            .Split(Environment.NewLine)
+            .Select(row => row.Select(e => e.ToString()).ToList())
+            .ToList();
+
+        var solution1 = 0;
+        var solution2 = 0;
+        
+        var guardY = input.FindIndex(row => 
+            row.Any(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)));
+        var guardX = input[guardY].FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell));
+        
+        var currentDirection = _cellGuardMatchDirection
+            .Where(e => e.Item2 == input[guardY][guardX])
+            .Select(e => e.Item1)
+            .Single();
+
+        _visitedCells.Add((guardX, guardY));
+
+        GuardRound(currentDirection, input, guardX, guardY, true);
+
+        /*foreach (var visited in _visitedCells)
+        {
+            var _input = input.ToList();
+            _input[visited.y][visited.x] = "#";
+
+            try
+            {
+                GuardRound(currentDirection, _input, guardX, guardY);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                solution2++;
+            }
+            
+        }*/
+
+        solution1 += _visitedCells.Count;
         
         Console.WriteLine($"Solution 1: {solution1}");
+        Console.WriteLine($"Solution 2: {solution2}");
     }
 }
