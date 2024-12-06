@@ -14,29 +14,24 @@ public class Solution : BaseSolution
         Left,
     }
 
-    private readonly Dictionary<string, string> _directionsDictionary = new (){
-        {Directions.Forward.ToString(), "^"},
-        {Directions.Right.ToString(), ">"},
-        {Directions.Backward.ToString(), "v"},
-        {Directions.Left.ToString(), "<"}};    
-    /*private readonly Dictionary<string, string> _directionsDictionary = new (){
-        {Directions.Forward.ToString(), "^"},
-        {Directions.Right.ToString(), ">"},
-        {Directions.Backward.ToString(), "v"},
-        {Directions.Left.ToString(), "<"}};*/
+    private readonly List<(Directions, string)> _cellGuardMatchDirection = [
+        (Directions.Forward, "^"),
+        (Directions.Right, ">"),
+        (Directions.Backward, "v"),
+        (Directions.Left, "<")];    
 
-    private Directions GetNextDirection(string direction)
+    private Directions GetNextDirection(Directions direction)
     {
         return direction switch
         {
-            nameof(Directions.Forward) => Directions.Right,
-            nameof(Directions.Right) => Directions.Backward,
-            nameof(Directions.Backward) => Directions.Left,
-            nameof(Directions.Left) => Directions.Forward,
+            Directions.Forward => Directions.Right,
+            Directions.Right => Directions.Backward,
+            Directions.Backward => Directions.Left,
+            Directions.Left => Directions.Forward,
         };
     }
 
-    private static string? GetNextCellValue(Directions direction, List<List<string>> input, int currX, int currY)
+    private static (int x, int y, string value)? GetNextCellInfos(Directions direction, List<List<string>> input, int currX, int currY)
     {
         var boundY = input.Count - 1;
         var boundX = input[0].Count - 1;
@@ -46,24 +41,24 @@ public class Solution : BaseSolution
         switch (direction)
         {
             case Directions.Forward:
-                if (nextY == boundY) return null;
-                nextY++;
+                nextY--;
+                if (nextY < 0) return null;
                 break;
             case Directions.Right:
-                if (nextX == boundX) return null;
                 nextX++;
+                if (nextX > boundX) return null;
                 break;
             case Directions.Backward:
-                if (currY == 0) return null;
-                nextY--;
+                nextY++;
+                if (nextY > boundY) return null;
                 break;
             case Directions.Left:
-                if (currX == 0) return null;
                 nextX--;
+                if (nextX > boundX) return null;
                 break;
         }
         
-        return input[nextY][nextX];
+        return (nextX, nextY, input[nextY][nextX]);
     }
     
     public override void Solve()
@@ -76,31 +71,38 @@ public class Solution : BaseSolution
         var solution1 = 0;
         
         var guardY = input.FindIndex(row => 
-            row.Any(cell => _directionsDictionary.ContainsValue(cell)));
-        var guardX = input[guardY].FindIndex(cell => _directionsDictionary.ContainsValue(cell));
-        var boundY = input.Count - 1;
-        var boundX = input[0].Count - 1;
+            row.Any(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)));
+        var guardX = input[guardY].FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell));
         
+        var currentDirection = _cellGuardMatchDirection
+            .Where(e => e.Item2 == input[guardY][guardX])
+            .Select(e => e.Item1)
+            .Single();
         
-        var currentDirection = _directionsDictionary
-            .Single(e => e.Value == input[guardY][guardX]);
-        //var nextDirection = GetNextDirection(currentDirection.Key);
-        
+        HashSet<(int x, int y)> visited = [
+            (guardX, guardY)
+        ];
+
         do
         {
-            /*var isNextCellOutBound = guardY == boundY || guardX == boundX;
-            solution1++;
-            var nextCellValue = GetNextCellValue(nextDirection, input, guardX, guardY);
+            var nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
 
-            if (nextCellValue == "#")
+            if (nextCell is not null && nextCell.Value.value == "#")
             {
-               // currentDirection = nextDirection;
+                currentDirection = GetNextDirection(currentDirection);
+                nextCell = GetNextCellInfos(currentDirection, input, guardX, guardY);
             }
-            Console.WriteLine(nextCellValue);
-            */
-            break;
+            
+            if (nextCell is null) break;
+
+            guardX = nextCell.Value.x;
+            guardY = nextCell.Value.y;
+            
+            visited.Add((guardX, guardY));
         } while (true);
+
+        solution1 += visited.Count;
         
-        Console.WriteLine($"{solution1} {guardY} {guardX} {currentDirection.Key} {nextDirection}");
+        Console.WriteLine($"Solution 1: {solution1}");
     }
 }
