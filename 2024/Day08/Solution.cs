@@ -12,65 +12,56 @@ public class Solution : BaseSolution
             .Split(Environment.NewLine)
             .ToArray();
 
-        var filteredInput = input
+        var antennasGroupedByFrequencies = input
             .SelectMany((line, y) => line
-                .Select((e, x) => (cell: e, (x, y)))
-                .Where(e => e.cell != '.')
+                .Select((e, x) => new { frequency = e, pos = (x, y) })
+                .Where(e => e.frequency != '.')
                 .ToArray())
-            .GroupBy(e => e.cell)
-            .Select(e => (cell: e.Key, e.Select(f => f.Item2).ToArray()))
+            .GroupBy(e => e.frequency)
+            .Select(e => new { frequency = e.Key, pos = e.Select(f => f.pos).ToArray() })
             .ToArray();
 
-        HashSet<(int x, int y)> antiNodesPoints = [];
-        HashSet<(int x, int y)> antiNodesPoints2 = [];
+        HashSet<(int x, int y)> antiNodesPos = [];
+        HashSet<(int x, int y)> antiNodesPosAndAntennas = [];
 
-        foreach (var group in filteredInput)
-        {
-            var points = group.Item2.ToList();
-
-            for (var i = 0; i < group.Item2.Length - 1; i++)
+        foreach (var antennasFrequencyGroup in antennasGroupedByFrequencies)
+            for (var i = 0; i < antennasFrequencyGroup.pos.Length - 1; i++)
             {
-                var currentItem = group.Item2[i];
+                var pos = antennasFrequencyGroup.pos[i];
+                antiNodesPosAndAntennas.Add(pos);
 
-                foreach (var coords in points.Skip(i + 1))
+                foreach (var comparePos in antennasFrequencyGroup.pos.Skip(i + 1))
                 {
-                    var diffs = (x: coords.x - currentItem.x, y: coords.y - currentItem.y);
+                    var posDiff = (x: comparePos.x - pos.x, y: comparePos.y - pos.y);
+                    antiNodesPosAndAntennas.Add(comparePos);
 
-                    if (ArePointsInsideBounds(currentItem) &&
-                        ArePointsInsideBounds(coords))
+                    var posNextAntiNode = (x: comparePos.x + posDiff.x, y: comparePos.y + posDiff.y);
+                    var posPrevAntiNode = (x: pos.x - posDiff.x, y: pos.y - posDiff.y);
+
+                    if (ArePosInsideBounds(posNextAntiNode)) antiNodesPos.Add(posNextAntiNode);
+
+                    while (ArePosInsideBounds(posNextAntiNode))
                     {
-                        antiNodesPoints2.Add(currentItem);
-                        antiNodesPoints2.Add(coords);
+                        antiNodesPosAndAntennas.Add(posNextAntiNode);
+                        posNextAntiNode.x += posDiff.x;
+                        posNextAntiNode.y += posDiff.y;
                     }
 
-                    var descTest = (x: coords.x + diffs.x, y: coords.y + diffs.y);
-                    var ascTest = (x: currentItem.x - diffs.x, y: currentItem.y - diffs.y);
+                    if (ArePosInsideBounds(posPrevAntiNode)) antiNodesPos.Add(posPrevAntiNode);
 
-                    if (ArePointsInsideBounds(descTest)) antiNodesPoints.Add(descTest);
-
-                    while (ArePointsInsideBounds(descTest))
+                    while (ArePosInsideBounds(posPrevAntiNode))
                     {
-                        antiNodesPoints2.Add(descTest);
-                        descTest.x += diffs.x;
-                        descTest.y += diffs.y;
-                    }
-
-                    if (ArePointsInsideBounds(ascTest)) antiNodesPoints.Add(ascTest);
-
-                    while (ArePointsInsideBounds(ascTest))
-                    {
-                        antiNodesPoints2.Add(ascTest);
-                        ascTest.x -= diffs.x;
-                        ascTest.y -= diffs.y;
+                        antiNodesPosAndAntennas.Add(posPrevAntiNode);
+                        posPrevAntiNode.x -= posDiff.x;
+                        posPrevAntiNode.y -= posDiff.y;
                     }
                 }
             }
-        }
 
-        Console.WriteLine($"Solution 1 {antiNodesPoints.Count}");
-        Console.WriteLine($"Solution 2 {antiNodesPoints2.Count}");
+        Console.WriteLine($"Solution 1 {antiNodesPos.Count}");
+        Console.WriteLine($"Solution 2 {antiNodesPosAndAntennas.Count}");
 
-        bool ArePointsInsideBounds((int x, int y) pos)
+        bool ArePosInsideBounds((int x, int y) pos)
         {
             return pos.x >= 0 && pos.x < input[0].Length && pos.y >= 0 && pos.y < input.Length;
         }
