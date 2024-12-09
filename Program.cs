@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using AdventOfCode;
 using Microsoft.Extensions.Configuration;
 
 IConfiguration config = new ConfigurationBuilder()
@@ -14,6 +15,8 @@ int.TryParse(config["day"], out var argDay);
 var targetYear = argYear ?? currentYear;
 var targetDay = (argDay > 0 ? argDay : currentDay).ToString("00");
 
+SolutionLoader.CreateInstance(targetDay, targetYear);
+var instanceSolution = SolutionLoader.GetInstance();
 var assembly = Assembly.GetExecutingAssembly();
 var className = $"AdventOfCode._{targetYear}.Day{targetDay}.Solution";
 
@@ -25,7 +28,7 @@ if (type is null)
     return;
 }
 
-var instance = Activator.CreateInstance(type, targetDay, targetYear);
+var instance = Activator.CreateInstance(type);
 if (instance is null)
 {
     Console.WriteLine($"Unable to create an instance of '{className}'.");

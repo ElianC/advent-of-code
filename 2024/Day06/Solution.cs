@@ -10,10 +10,6 @@ public class Solution : BaseSolution
         (Directions.Left, "<")
     ];
 
-    public Solution(string day, string year) : base(day, year)
-    {
-    }
-
     private Directions GetNextDirection(Directions dir)
     {
         return dir switch

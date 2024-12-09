@@ -2,10 +2,6 @@ namespace AdventOfCode._2024.Day01;
 
 public class Solution : BaseSolution
 {
-    public Solution(string day, string year) : base(day, year)
-    {
-    }
-
     public override void Solve()
     {
         var input = GetInput();

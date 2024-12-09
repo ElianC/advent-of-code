@@ -4,7 +4,7 @@ public class Solution : BaseSolution
 {
     private readonly Dictionary<string, (int, int)> _dir = new();
 
-    public Solution(string day, string year) : base(day, year)
+    public Solution()
     {
         _dir.Add("up", (0, -1));
         _dir.Add("down", (0, 1));

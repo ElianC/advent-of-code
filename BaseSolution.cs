@@ -2,23 +2,16 @@ namespace AdventOfCode;
 
 public abstract class BaseSolution
 {
-    private readonly string _day;
-    private readonly string _year;
-
-    protected BaseSolution(string day, string year)
-    {
-        _day = day;
-        _year = year;
-    }
-
     protected string GetInput()
     {
-        var path = Path.Combine(_year, $"Day{_day}", "Input.txt");
+        var solutionInstance = SolutionLoader.GetInstance();
+        var path = Path.Combine(solutionInstance.Year, $"Day{solutionInstance.Day}", "Input.txt");
 
-        using StreamReader reader = new(path);
-        var text = reader.ReadToEnd();
-
-        return text;
+        if (Path.GetFullPath(path).Contains("Debug"))
+            path = Path.Combine(
+                Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "",
+                path);
+        return File.ReadAllText(path);
     }
 
     public abstract void Solve();

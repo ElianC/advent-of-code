@@ -2,10 +2,6 @@ namespace AdventOfCode._2024.Day07;
 
 public class Solution : BaseSolution
 {
-    public Solution(string day, string year) : base(day, year)
-    {
-    }
-
     private static bool CheckOperatorsRecursively(List<long> numbers, long target)
     {
         if (numbers.Count == 1) return numbers.First() == target;
