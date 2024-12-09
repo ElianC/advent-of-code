@@ -85,15 +85,16 @@ public class Solution : BaseSolution
 
                 do
                 {
-                    var firstFilledBlockIndex = filledBlockReversed
-                        .FindIndex(e => e.Value.Count <= freeBlockCount);
-                    if (firstFilledBlockIndex.Equals(-1)) break; // Exit the loop if no index matching
+                    var firstFilledBlock = filledBlockReversed
+                        .FirstOrDefault(e => e.Value.Count <= freeBlockCount);
 
-                    var firstFilledBlock = filledBlockReversed[firstFilledBlockIndex];
+                    if (firstFilledBlock.Equals(default)) break;
+
                     var count = firstFilledBlock.Value.Count;
+
                     foreach (var block in firstFilledBlock.Value) listDefragmented2.Add(block);
 
-                    filledBlockReversed.RemoveAt(firstFilledBlockIndex);
+                    filledBlockReversed.Remove(firstFilledBlock);
 
                     freedIndexes.Add(firstFilledBlock.BlockIndex);
                     freeBlockCount -= count;
@@ -110,18 +111,7 @@ public class Solution : BaseSolution
             .Select((block, index) => block is not null ? block * index : 0)
             .Sum();
 
-        Console.WriteLine($"solution1 {solution1} ");
-        //Console.WriteLine(
-        //  $"{solution2} {string.Join("", listDefragmented2.Select(e => e?.ToString() ?? "."))}");
-        Console.WriteLine($"solution2 {solution2} ");
-
-        //00...111...2...333.44.5555.6666.777.888899
-        //0099.111...2...333.44.5555.6666.777.8888..
-        //0099.1117772...333.44.5555.6666.....8888..
-        //0099.111777244.333....5555.6666.....8888..
-        //00992111777.44.333....5555.6666.....8888..
-        //00992111777.44.333....5555.6666.....8888..
-
-        //10898456634743 too high
+        Console.WriteLine($"solution1 {solution1}");
+        Console.WriteLine($"solution2 {solution2}");
     }
 }
