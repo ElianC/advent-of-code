@@ -32,7 +32,7 @@ public class Solution : BaseSolution
             .ToList();
 
         var filledBlockReversed = input
-            .Where(blocks => blocks.Value.Any() && blocks.Value.All(block => block is not null))
+            .Where(blocks => blocks.Value.All(block => block is not null))
             .Reverse()
             .ToList();
 
@@ -60,7 +60,6 @@ public class Solution : BaseSolution
             }
         }
 
-        // var listDefragmented2 = input.ToList();
         List<long?> listDefragmented2 = [];
         HashSet<int> freedIndexes = [];
 
@@ -70,6 +69,8 @@ public class Solution : BaseSolution
 
             if (i % 2 == 0)
             {
+                filledBlockReversed.Remove(blocks);
+
                 foreach (var block in blocks.Value)
                     if (freedIndexes.Contains(blocks.BlockIndex))
                         listDefragmented2.Add(null);
@@ -79,78 +80,29 @@ public class Solution : BaseSolution
             else
             {
                 var freeBlockCount = blocks.Value.Count;
-                int firstFilledBlockIndex;
+
+                if (freeBlockCount == 0) continue;
+
                 do
                 {
-                    firstFilledBlockIndex = filledBlockReversed
+                    var firstFilledBlockIndex = filledBlockReversed
                         .FindIndex(e => e.Value.Count <= freeBlockCount);
-                    if (firstFilledBlockIndex.Equals(-1)) break; // Exit the loop if the tuple is default
-                    //Console.WriteLine($"{firstFilledBlock.BlockIndex}, {string.Join("", firstFilledBlock.Value)}");
+                    if (firstFilledBlockIndex.Equals(-1)) break; // Exit the loop if no index matching
+
                     var firstFilledBlock = filledBlockReversed[firstFilledBlockIndex];
                     var count = firstFilledBlock.Value.Count;
                     foreach (var block in firstFilledBlock.Value) listDefragmented2.Add(block);
 
                     filledBlockReversed.RemoveAt(firstFilledBlockIndex);
-                    //Console.WriteLine($"count: {filledBlockReversed.Count}");
-                    Console.WriteLine($"index {firstFilledBlock.BlockIndex}");
+
                     freedIndexes.Add(firstFilledBlock.BlockIndex);
                     freeBlockCount -= count;
                 } while (true);
 
-                //Console.WriteLine($"freeBlockCount {freeBlockCount}");
                 for (var j = 0; j < freeBlockCount; j++) listDefragmented2.Add(null);
-
-                /*do
-                {
-                    firstFilledBlock = filledBlockReversed
-                        .FirstOrDefault(e => e.Value.Count <= freeBlockCount);
-
-                    if (!firstFilledBlock.Equals(default((int?, int))))
-                    {
-                        var count = firstFilledBlock.Value.Count;
-                        foreach (var block in blocks.Value)
-                            listDefragmented2.Add(block);
-
-                        freedIndexes.Add(firstFilledBlock.BlockIndex);
-                        freeBlockCount -= count;
-                    }
-                } while (firstFilledBlock.Equals(default((int?, int))));*/
             }
         }
 
-        /*
-        foreach (var filledBlock in filledBlockReversed.ToList())
-        {
-            //Console.WriteLine($"Defragmented filled blocks: {string.Join("", filledBlock.Value)}");
-
-            var firstFreeBlock = freeBlocks.FirstOrDefault(e => e.Value.Count >= filledBlock.Value.Count);
-
-            if (firstFreeBlock.Value is not null)
-            {
-                freedIndexes.Add(filledBlock.BlockIndex);
-
-                listDefragmented2[firstFreeBlock.BlockIndex] = filledBlock;
-
-                var diff = firstFreeBlock.Value.Count - filledBlock.Value.Count;
-
-                listDefragmented2[filledBlock.BlockIndex] = (
-                    Enumerable.Repeat<int?>(null, filledBlock.Value.Count).ToList(), filledBlock.BlockIndex);
-
-                if (diff > 0)
-                {
-                    Console.WriteLine($"Defragmented filled blocks: {diff}");
-                    //freeBlocks
-                    freeBlocks.RemoveAt(0);
-                    freeBlocks.Prepend((Enumerable.Repeat<int?>(null, diff).ToList(), firstFreeBlock.BlockIndex));
-                }
-                else
-                {
-                    freeBlocks.RemoveAt(0);
-                }
-                //freeBlocks.Prepend((Enumerable.Repeat<int?>(null, diff).ToList(), firstFreeBlock.BlockIndex + 1));
-            }
-        }
-*/
         var solution1 = listDefragmented
             .Select((block, index) => block * index)
             .Sum();
@@ -159,8 +111,8 @@ public class Solution : BaseSolution
             .Sum();
 
         Console.WriteLine($"solution1 {solution1} ");
-        Console.WriteLine(
-            $"{solution2} {string.Join("", listDefragmented2.Select(e => e?.ToString() ?? "."))}");
+        //Console.WriteLine(
+        //  $"{solution2} {string.Join("", listDefragmented2.Select(e => e?.ToString() ?? "."))}");
         Console.WriteLine($"solution2 {solution2} ");
 
         //00...111...2...333.44.5555.6666.777.888899
