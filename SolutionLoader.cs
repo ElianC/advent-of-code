@@ -16,9 +16,9 @@ public sealed class SolutionLoader
     public string Day { get; }
     public string Year { get; }
 
-    public static SolutionLoader CreateInstance(string day, string year)
+    public static void CreateInstance(string day, string year)
     {
-        return _instance = new SolutionLoader(day, year);
+        _instance = new SolutionLoader(day, year);
     }
 
     public static SolutionLoader GetInstance()
