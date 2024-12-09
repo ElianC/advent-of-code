@@ -12,13 +12,13 @@ public class Solution : BaseSolution
             {
                 int? blockId = null;
                 if (id % 2 == 0) blockId = blockIdInc++;
-                //return new { blockId, blocks = Enumerable.Repeat(blockId, e), blockIndex = id };
-                return Enumerable.Repeat(blockId, e).Select(block => new { Value = block, BlockIndex = id });
+                return Enumerable
+                    .Repeat(blockId, e)
+                    .Select(block => new { Value = block, BlockIndex = id });
             }).ToList();
 
         var freeBlocksCount = input
-            .Where((block, i) => block.Value is null)
-            .Count();
+            .Count(block => block.Value is null);
 
         var filledBlockReversed = input
             .Where(block => block.Value is not null)
@@ -37,9 +37,9 @@ public class Solution : BaseSolution
                 continue;
             }
 
-            var nextFreeBlock = filledBlockReversed[0];
+            var lastFilledBlock = filledBlockReversed[0];
 
-            listDefragmented.Add(nextFreeBlock.Value ?? 0);
+            listDefragmented.Add(lastFilledBlock.Value ?? 0);
             filledBlockReversed = filledBlockReversed.Skip(1).ToArray();
         }
 
