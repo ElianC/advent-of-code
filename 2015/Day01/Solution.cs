@@ -14,20 +14,20 @@ public class Solution : BaseSolution
         var closingParenthesisCount = input.Count(parenthesis => parenthesis == GoDownOneFloor);
         var floorReached = openingParenthesisCount - closingParenthesisCount;
 
-        Console.WriteLine($"The instructions led Santa to floor {floorReached}");
+        Console.WriteLine("The instructions led Santa to floor {0}", floorReached);
 
-        var currenFloor = 0;
+        var currentFloor = 0;
         var characterPosition = 0;
 
         for (; characterPosition < input.Length; characterPosition++)
         {
-            if (currenFloor == Basement) break;
+            if (currentFloor == Basement) break;
 
-            if (input[characterPosition] == GoUpOneFloor) currenFloor++;
-            if (input[characterPosition] == GoDownOneFloor) currenFloor--;
+            if (input[characterPosition] == GoUpOneFloor) currentFloor++;
+            if (input[characterPosition] == GoDownOneFloor) currentFloor--;
         }
 
-        Console.WriteLine(
-            $"The position of the first character that causes Santa to enter in the basement is {characterPosition}");
+        Console.WriteLine("The position of the first character that causes Santa to enter in the basement is {0}",
+            characterPosition);
     }
 }
