@@ -2,32 +2,33 @@ namespace AdventOfCode._2015.Day01;
 
 public class Solution : BaseSolution
 {
-    private const int Basement = -1;
-    private const int GoUpOneFloor = '(';
-    private const int GoDownOneFloor = ')';
+    private const int BasementLevel = -1;
+    private const char GoUpOneLevel = '(';
+    private const char GoDownOneLevel = ')';
 
     public override void Solve()
     {
-        var input = GetInput();
+        var instructions = GetInput();
+        int floorsClimbedCount = default;
+        int floorsWentDownCount = default;
+        int levelReached = default;
+        int firstInstructionNumberToBasement = default;
 
-        var openingParenthesisCount = input.Count(parenthesis => parenthesis == GoUpOneFloor);
-        var closingParenthesisCount = input.Count(parenthesis => parenthesis == GoDownOneFloor);
-        var floorReached = openingParenthesisCount - closingParenthesisCount;
-
-        Console.WriteLine("The instructions led Santa to floor {0}", floorReached);
-
-        var currentFloor = 0;
-        var characterPosition = 0;
-
-        for (; characterPosition < input.Length; characterPosition++)
+        for (var instructionNumber = 1; instructionNumber <= instructions.Length; instructionNumber++)
         {
-            if (currentFloor == Basement) break;
+            var instruction = instructions[instructionNumber - 1];
 
-            if (input[characterPosition] == GoUpOneFloor) currentFloor++;
-            if (input[characterPosition] == GoDownOneFloor) currentFloor--;
+            if (instruction == GoUpOneLevel) floorsClimbedCount++;
+            else if (instruction == GoDownOneLevel) floorsWentDownCount++;
+
+            levelReached = floorsClimbedCount - floorsWentDownCount;
+
+            if (levelReached is BasementLevel && firstInstructionNumberToBasement == default)
+                firstInstructionNumberToBasement = instructionNumber;
         }
 
-        Console.WriteLine("The position of the first character that causes Santa to enter in the basement is {0}",
-            characterPosition);
+        Console.WriteLine("The instructions led Santa to floor {0}", levelReached);
+        Console.WriteLine("The first instruction that led Santa to the basement was instruction number {0}",
+            firstInstructionNumberToBasement);
     }
 }
