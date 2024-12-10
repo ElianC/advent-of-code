@@ -3,6 +3,7 @@ namespace AdventOfCode._2024.Day10;
 public class Solution : BaseSolution
 {
     private readonly HashSet<(int x, int y, int startX, int startY)> posFound = [];
+    private readonly List<(int x, int y)> posFound2 = [];
     private int solution1;
 
     public void getNextCells(List<List<int>> grid, (int x, int y) pos, (int x, int y) startPos)
@@ -26,6 +27,7 @@ public class Solution : BaseSolution
                 Console.WriteLine("Found 9 cells");
                 solution1 += 1;
                 posFound.Add((p.x, p.y, startPos.x, startPos.y));
+                posFound2.Add((p.x, p.y));
                 continue;
             }
 
@@ -80,6 +82,7 @@ public class Solution : BaseSolution
         foreach (var cell in startedCells) getNextCells(input, cell.pos, (cell.pos.x, cell.pos.y));
 
         Console.WriteLine($"solution {posFound.Count}");
+        Console.WriteLine($"solution {posFound2.Count}");
         /*
         HashSet<(int x, int y)> cellReached = [];
 
