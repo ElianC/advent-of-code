@@ -2,55 +2,57 @@ namespace AdventOfCode._2024.Day11;
 
 public class Solution : BaseSolution
 {
-    private const int blinkCount = 25;
-    private int currentBlink = 0;
-    
-    public List<ulong> BlinkNumbers(List<ulong> numbers)
+    public long BlinkNumbers(Dictionary<long, long> numbers, int blinkCount)
     {
-        currentBlink++;
-        var blinkNumbers = new List<ulong>();
-        
-        foreach (var number in numbers)
+        for (var i = 0; i < blinkCount; i++)
         {
-            var stringifiedNumber = number.ToString();
-            
-            if (number == 0)
-            {
-                blinkNumbers.Add(1);
-            } 
-            else if (stringifiedNumber.Length % 2 == 0)
-            {
-                var len = stringifiedNumber.Length / 2;
-                var firstNumber = stringifiedNumber.Substring(0, len);
-                var secondNumber = stringifiedNumber.Substring(len, len);
+            Dictionary<long, long> blinkNumbers = [];
 
-                blinkNumbers.Add(ulong.Parse(firstNumber));
-                blinkNumbers.Add(ulong.Parse(secondNumber));
-            }
-            else
+            foreach (var (number, c) in numbers)
             {
-                blinkNumbers.Add(number * 2024);
+                var stringifiedNumber = number.ToString();
+
+                if (number == 0)
+                {
+                    AddStones(1, c);
+                }
+                else if (stringifiedNumber.Length % 2 == 0)
+                {
+                    var len = stringifiedNumber.Length / 2;
+                    var firstNumber = stringifiedNumber.Substring(0, len);
+                    var secondNumber = stringifiedNumber.Substring(len, len);
+
+                    AddStones(long.Parse(firstNumber), c);
+                    AddStones(long.Parse(secondNumber), c);
+                }
+                else
+                {
+                    AddStones(number * 2024, c);
+                }
+            }
+
+            numbers = blinkNumbers;
+
+            void AddStones(long stone, long c)
+            {
+                blinkNumbers.TryAdd(stone, 0);
+                blinkNumbers[stone] += c;
             }
         }
-        
-        
-        if (blinkCount > currentBlink)
-        {
-            return BlinkNumbers(blinkNumbers);
-        } 
-        
-        currentBlink++;
-        return blinkNumbers;
+
+
+        return numbers.Values.Sum();
     }
-    
+
     public override void Solve()
     {
         var input = GetInput()
             .Split(" ")
-            .Select(ulong.Parse)
-            .ToList();
+            .ToDictionary(long.Parse, _ => 1L);
 
-        long res = BlinkNumbers(input).Count();
+        var res = BlinkNumbers(input, 25);
+        var res2 = BlinkNumbers(input, 75);
         Console.WriteLine($"{res}");
+        Console.WriteLine($"{res2}");
     }
 }
