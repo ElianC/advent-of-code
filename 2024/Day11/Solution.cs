@@ -6,53 +6,57 @@ public class Solution : BaseSolution
     {
         for (var i = 0; i < blinkCount; i++)
         {
-            Dictionary<long, long> blinkNumbers = [];
+            var nextBlinkNumbers = new Dictionary<long, long>();
 
-            foreach (var (number, c) in numbers)
-            {
-                var stringifiedNumber = number.ToString();
+            foreach (var (number, count) in numbers) ProcessNumber(number, count, nextBlinkNumbers);
 
-                if (number == 0)
-                {
-                    AddStones(1, c);
-                }
-                else if (stringifiedNumber.Length % 2 == 0)
-                {
-                    var len = stringifiedNumber.Length / 2;
-                    var firstNumber = stringifiedNumber.Substring(0, len);
-                    var secondNumber = stringifiedNumber.Substring(len, len);
-
-                    AddStones(long.Parse(firstNumber), c);
-                    AddStones(long.Parse(secondNumber), c);
-                }
-                else
-                {
-                    AddStones(number * 2024, c);
-                }
-            }
-
-            numbers = blinkNumbers;
-
-            void AddStones(long stone, long c)
-            {
-                blinkNumbers.TryAdd(stone, 0);
-                blinkNumbers[stone] += c;
-            }
+            numbers = nextBlinkNumbers;
         }
 
-
         return numbers.Values.Sum();
+    }
+
+    private void ProcessNumber(long number, long count, Dictionary<long, long> blinkNumbers)
+    {
+        if (number == 0)
+        {
+            AddStones(1, count, blinkNumbers);
+            return;
+        }
+
+        var numberString = number.ToString();
+
+        if (numberString.Length % 2 == 0)
+        {
+            var halfLength = numberString.Length / 2;
+            var firstHalf = long.Parse(numberString[..halfLength]);
+            var secondHalf = long.Parse(numberString[halfLength..]);
+
+            AddStones(firstHalf, count, blinkNumbers);
+            AddStones(secondHalf, count, blinkNumbers);
+        }
+        else
+        {
+            AddStones(number * 2024, count, blinkNumbers);
+        }
+    }
+
+    private void AddStones(long stone, long count, Dictionary<long, long> blinkNumbers)
+    {
+        if (!blinkNumbers.TryAdd(stone, count)) blinkNumbers[stone] += count;
     }
 
     public override void Solve()
     {
         var input = GetInput()
             .Split(" ")
-            .ToDictionary(long.Parse, _ => 1L);
+            .Select(long.Parse)
+            .ToDictionary(g => g, g => (long)1);
 
-        var res = BlinkNumbers(input, 25);
-        var res2 = BlinkNumbers(input, 75);
-        Console.WriteLine($"{res}");
-        Console.WriteLine($"{res2}");
+        var result1 = BlinkNumbers(input, 25);
+        var result2 = BlinkNumbers(input, 75);
+
+        Console.WriteLine($"Result after 25 blinks: {result1}");
+        Console.WriteLine($"Result after 75 blinks: {result2}");
     }
 }
