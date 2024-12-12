@@ -1,78 +1,71 @@
+using System.Drawing;
+using AdventOfCode.Utils;
+
 namespace AdventOfCode._2024.Day12;
 
 public class Solution : BaseSolution
 {
-    private readonly Dictionary<int, (char cell, List<(int x, int y)>)> Dict = new();
-    public readonly List<(int x, int y)> NeighbourCellsOffset = [(0, -1), (0, 1), (-1, 0), (1, 0)];
+    private readonly Dictionary<int, (char cell, List<Point>)> _dict = new();
+    private readonly Grid<char> _grid;
+    public readonly List<Size> NeighbourCellsOffset = [new(0, -1), new(0, 1), new(-1, 0), new(1, 0)];
 
-    public readonly List<(int x, int y)> NeighbourDiagonalCellsOffset =
-    [
-        (x: -1, y: -1),
-        (x: 1, y: -1),
-        (x: -1, y: 1),
-        (x: 1, y: 1)
-    ];
+    public readonly List<Size> NeighbourDiagonalCellsOffset = [new(-1, -1), new(1, -1), new(-1, 1), new(1, 1)];
 
-    public HashSet<(int x, int y)> CellsAlreadyGrouped = [];
+    public HashSet<Point> CellsAlreadyGrouped = [];
 
-    private void CheckAdjacentCells((int x, int y) cellToCheck, char target, int dictIndex,
-        List<List<(char cell, (int x, int y) pos)>> input)
+    public Solution()
+    {
+        _grid = new Grid<char>(GetInput());
+    }
+
+    private void CheckAdjacentCells(Point cellToCheck, char target, int dictIndex)
     {
         var neighbourCells = NeighbourCellsOffset
-            .Select(coord => (x: cellToCheck.x + coord.x, y: cellToCheck.y + coord.y))
-            .Where(cell => !CellsAlreadyGrouped.Contains(cell))
-            .Where(e => e is { x: >= 0, y: >= 0 })
-            .Where(e => e.x < input[0].Count && e.y < input.Count)
-            .Where(e => input[e.y][e.x].cell == target)
+            .Select(size => cellToCheck + size)
+            .Where(point => !CellsAlreadyGrouped.Contains(point))
+            .Where(point => _grid.ContainsPoint(point))
+            .Where(point => _grid[point.Y][point.X].value == target)
             .ToList();
 
-        foreach (var neightboor in neighbourCells)
+        foreach (var neightboorPoint in neighbourCells)
         {
-            if (!CellsAlreadyGrouped.Add(neightboor)) continue;
-            Dict[dictIndex].Item2.Add(neightboor);
-            CheckAdjacentCells(neightboor, target, dictIndex, input);
+            if (!CellsAlreadyGrouped.Add(neightboorPoint)) continue;
+            _dict[dictIndex].Item2.Add(neightboorPoint);
+            CheckAdjacentCells(neightboorPoint, target, dictIndex);
         }
     }
 
     public override void Solve()
     {
         var id = 0;
-        var input = GetInput()
-            .Split(Environment.NewLine)
-            .Select((row, y) => row.Select((cell, x) => (cell, pos: (x, y))).ToList())
-            .ToList();
-
         long solution1 = 0;
         long solution2 = 0;
 
-
-        foreach (var row in input)
-        foreach (var cell in row)
+        foreach (var cell in _grid.GetGrid().SelectMany(row => row))
         {
-            if (!CellsAlreadyGrouped.Add(cell.pos)) continue;
+            if (!CellsAlreadyGrouped.Add(cell.point)) continue;
 
             var newIndex = id++;
-            Dict.TryAdd(newIndex, (cell.cell, [cell.pos]));
-            CheckAdjacentCells(cell.pos, cell.cell, newIndex, input);
+            _dict.TryAdd(newIndex, (cell.value, [cell.point]));
+            CheckAdjacentCells(cell.point, cell.value, newIndex);
         }
 
-        foreach (var elem in Dict)
+        foreach (var elem in _dict)
         {
             var area = elem.Value.Item2.Count;
-
-
-            var perimeter = elem.Value.Item2.Select(e => NeighbourCellsOffset
-                .Select(coord => (x: e.x + coord.x, y: e.y + coord.y))
-                .Where(el =>
-                {
-                    if (el is { x: >= 0, y: >= 0 } && el.x < input[0].Count && el.y < input.Count)
-                        return input[el.y][el.x].cell != elem.Value.cell;
-                    return true;
-                })
-                .Count()
+            var perimeter = elem.Value.Item2.Select(point =>
+                NeighbourCellsOffset
+                    .Select(size => point + size)
+                    .Where(el =>
+                    {
+                        if (_grid.ContainsPoint(el))
+                            return _grid[el.Y][el.X].value != elem.Value.cell;
+                        return true;
+                    })
+                    .Count()
             ).Sum();
 
-            var sides = elem.Value.Item2.Sum(cell => GetCountEdges(cell, input));
+            var sides = elem.Value.Item2.Sum(GetCountEdges);
 
             solution1 += perimeter * area;
             solution2 += sides * area;
@@ -82,22 +75,22 @@ public class Solution : BaseSolution
         Console.WriteLine(solution2);
     }
 
-    private int GetCountEdges((int x, int y) cell, List<List<(char cell, (int x, int y) pos)>> input)
+    private int GetCountEdges(Point cell)
     {
-        var value = input[cell.y][cell.x].cell;
+        var value = _grid[cell.Y][cell.X].value;
 
         var directNeighbors = NeighbourCellsOffset
-            .Select(coord => (x: cell.x + coord.x, y: cell.y + coord.y))
+            .Select(coord => cell + coord)
             .ToList();
 
         var diagonalNeighbors = NeighbourDiagonalCellsOffset
-            .Select(coord => (x: cell.x + coord.x, y: cell.y + coord.y))
+            .Select(size => cell + size)
             .ToList();
 
-        char GetCellValue((int x, int y) pos)
+        char GetCellValue(Point point)
         {
-            if (pos.x >= 0 && pos.y >= 0 && pos.x < input[0].Count && pos.y < input.Count)
-                return input[pos.y][pos.x].cell;
+            if (_grid.ContainsPoint(point))
+                return _grid[point.Y][point.X].value;
             return ' ';
         }
 
@@ -115,16 +108,15 @@ public class Solution : BaseSolution
 
         var borderCount = directValues.Count(v => v != value);
 
-        if (borderCount == 4) return 4 + concave;
+        if (borderCount == 4) return 4;
 
         if (borderCount == 3) return 2 + concave;
 
-        var convex = 0;
 
         var isConvex = borderCount == 2 &&
                        !(directValues[0] == directValues[1] && directValues[0] == value) &&
                        !(directValues[2] == directValues[3] && directValues[2] == value);
-        if (isConvex) convex++;
+        var convex = isConvex ? 1 : 0;
 
         return concave + convex;
     }
