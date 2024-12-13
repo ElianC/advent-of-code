@@ -53,7 +53,7 @@ public class Grid<T>
     {
         if (ContainsPoint(point) is false) throw new Exception($"Point is not in grid {point.ToString()}");
 
-        var pointSelected = _grid[point.Y].ElementAt(point.Y);
+        var pointSelected = _grid[point.Y].ElementAt(point.X);
         pointSelected.Value = value;
 
         _grid[point.Y][point.X] = pointSelected;

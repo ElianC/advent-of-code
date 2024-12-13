@@ -33,10 +33,10 @@ public class Solution : BaseSolution
         };
     }
 
-    private (Point pos, string cell)? GetNextCellInfos(
-        List<List<string>> input, Point pos, Directions dir)
+    private (System.Drawing.Point Point, char Value)? GetNextCellInfos(Point pos, Directions dir)
     {
         Size offset = new();
+
         switch (dir)
         {
             case Directions.Forward:
@@ -56,10 +56,11 @@ public class Solution : BaseSolution
         var nextPos = pos + offset;
 
         if (_grid.ContainsPoint(nextPos) is false) return null;
-        return (new Point(nextPos.X, nextPos.Y), input[nextPos.Y][nextPos.X]);
+
+        return _grid.GetGridPoint(nextPos);
     }
 
-    private List<Point> DoGuardRound(List<List<string>> input, Point startPos, Directions startDir)
+    private List<Point> DoGuardRound(Point startPos, Directions startDir)
     {
         var guardDir = startDir;
         var guardPos = startPos;
@@ -72,17 +73,17 @@ public class Solution : BaseSolution
                 throw new Exception(
                     "Guard has already patrolled here, he must going around in circles.");
 
-            var nextCell = GetNextCellInfos(input, guardPos, guardDir);
+            var nextCell = GetNextCellInfos(guardPos, guardDir);
 
-            while (nextCell is { cell: "#" })
+            while (nextCell is { Value: '#' })
             {
                 guardDir = GetNextDirection(guardDir);
-                nextCell = GetNextCellInfos(input, guardPos, guardDir);
+                nextCell = GetNextCellInfos(guardPos, guardDir);
             }
 
             if (nextCell is null) break;
 
-            guardPos = nextCell.Value.pos;
+            guardPos = nextCell.Value.Point;
         } while (true);
 
         return visitedCells
@@ -93,9 +94,6 @@ public class Solution : BaseSolution
 
     public override void Solve()
     {
-        var input = _grid.GetGrid()
-            .Select(e => e.Select(f => f.Value.ToString()).ToList()).ToList();
-
         var guardPos = _grid.GetGrid()
             .Select((row, y) =>
             {
@@ -111,25 +109,27 @@ public class Solution : BaseSolution
             .Select(e => e.Item1)
             .Single();
 
-        var visitedCells = DoGuardRound(input, guardPos, guardDir);
+        var visitedCells = DoGuardRound(guardPos, guardDir);
 
         var solution1 = visitedCells.Count;
         var solution2 = 0;
 
         foreach (var visited in visitedCells)
         {
-            var localInput = new List<List<string>>(input.Select(e => e.ToList()));
-
             if (visited.Equals(guardPos)) continue;
-            localInput[visited.Y][visited.X] = "#";
+            _grid.UpdateGridPointValue(visited, '#');
 
             try
             {
-                DoGuardRound(localInput, guardPos, guardDir);
+                DoGuardRound(guardPos, guardDir);
             }
             catch (Exception)
             {
                 solution2++;
+            }
+            finally
+            {
+                _grid.UpdateGridPointValue(visited, '.');
             }
         }
 
