@@ -1,21 +1,30 @@
+using System.Drawing;
+using AdventOfCode.Utils;
+
 namespace AdventOfCode._2024.Day10;
 
 public class Solution : BaseSolution
 {
-    private readonly HashSet<((int x, int y) endTrailPosition, (int x, int y) startingPosition)> _completedTrails = [];
-    private readonly List<(int x, int y)> _reachableEndPoints = [];
+    private readonly HashSet<(Point endTrailPosition, Point startingPosition)> _completedTrails = [];
+    private readonly Grid<int> _grid;
+    private readonly List<Point> _reachableEndPoints = [];
 
-    private void ExploreNextCells(List<List<int>> grid, (int x, int y) currentPosition,
-        (int x, int y) trailStartPosition)
+    public Solution()
     {
-        var currentCell = grid[currentPosition.y][currentPosition.x];
-        List<(int x, int y)> directionOffsets = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+        _grid = new Grid<int>(GetInput());
+    }
+
+    private void ExploreNextCells(Point currentPosition,
+        Point trailStartPosition)
+    {
+        var currentCell = _grid[currentPosition.Y][currentPosition.X].Value;
+        List<Size> directionOffsets = [new(-1, 0), new(0, 1), new(1, 0), new(0, -1)];
 
         var nextValidCells = directionOffsets
-            .Select(offset => (x: currentPosition.x + offset.x, y: currentPosition.y + offset.y))
-            .Where(pos => pos.x >= 0 && pos.x < grid[0].Count && pos.y >= 0 && pos.y < grid.Count)
-            .Where(pos => grid[pos.y][pos.x] == currentCell + 1)
-            .Select(pos => new { position = (pos.x, pos.y), value = grid[pos.y][pos.x] })
+            .Select(offset => currentPosition + offset)
+            .Where(_grid.ContainsPoint)
+            .Where(pos => _grid[pos.Y][pos.X].Value == currentCell + 1)
+            .Select(pos => new { position = pos, value = _grid[pos.Y][pos.X].Value })
             .ToList();
 
         foreach (var nextCell in nextValidCells)
@@ -27,27 +36,19 @@ public class Solution : BaseSolution
                 continue;
             }
 
-            ExploreNextCells(grid, nextCell.position, trailStartPosition);
+            ExploreNextCells(nextCell.position, trailStartPosition);
         }
     }
 
     public override void Solve()
     {
-        var input = GetInput()
-            .Split(Environment.NewLine)
-            .Select(row => row
-                .Select(cell => int.Parse(cell.ToString()))
-                .ToList())
+        var trailsHead = _grid.GetGrid()
+            .SelectMany(row => row)
+            .Where(cell => cell.Value == 0)
             .ToList();
 
-        var trailsHead = input
-            .SelectMany((row, y) => row
-                .Select((cellValue, x) => new { value = cellValue, position = (x, y) })
-                .ToList())
-            .Where(cell => cell.value == 0);
-
         foreach (var trailHead in trailsHead)
-            ExploreNextCells(input, trailHead.position, trailHead.position);
+            ExploreNextCells(trailHead.Point, trailHead.Point);
 
         Console.WriteLine($"part 1 {_completedTrails.Count}");
         Console.WriteLine($"part 2 {_reachableEndPoints.Count}");

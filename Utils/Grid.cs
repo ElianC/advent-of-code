@@ -14,9 +14,10 @@ public class Grid<T>
                 .Select((cellValue, x) =>
                 {
                     var point = new Point(x, y);
-                    var value = (T)Convert.ChangeType(cellValue, typeof(T));
+                    var convertedValue =
+                        (T)Convert.ChangeType(typeof(T) == typeof(int) ? cellValue.ToString() : cellValue, typeof(T));
 
-                    return (point, value);
+                    return (point, convertedValue);
                 }).ToList())
             .ToList();
     }
