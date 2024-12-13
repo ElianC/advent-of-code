@@ -18,19 +18,18 @@ public class Solution : BaseSolution
 
         var maxSpinPossible = maxSpinsPossible.Max();
             
-        Console.WriteLine($"Max spins possible: {maxSpinPossible}");
         for (var i = 1; i < maxSpinPossible; i++)
         {
-            List<(Size offset, int price)> spins = [];
+            Dictionary<long, (Size offset, int price)> spins = [];
 
             for (long a = 0; a < i; a++)
             {
-                spins.Add((offsetA, 3));
+                spins.Add(a, (offsetA, 3));
             }           
             
             for (long a = i; a < maxSpinPossible - i; a++)
             {
-                spins.Add((offsetB, 1));
+                spins.Add(a, (offsetB, 1));
             }
             
             var creditsSpentForTry = 0;
@@ -38,8 +37,8 @@ public class Solution : BaseSolution
                 
             foreach (var spin in spins)
             {
-                creditsSpentForTry += spin.price;
-                currentPoint += spin.offset;
+                creditsSpentForTry += spin.Value.price;
+                currentPoint += spin.Value.offset;
                     
                 var isWiningSpin = winningPoint.X == currentPoint.X && winningPoint.Y == currentPoint.Y;
 
