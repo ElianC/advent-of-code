@@ -34,4 +34,28 @@ public class Grid<T>
     {
         return _grid;
     }
+
+    public (Point Point, T Value) GetGridPoint(Point point)
+    {
+        if (ContainsPoint(point) is false) throw new Exception($"Point is not in grid {point.ToString()}");
+
+        return _grid[point.Y][point.X];
+    }
+
+    public T GetGridPointValue(Point point)
+    {
+        if (ContainsPoint(point) is false) throw new Exception($"Point is not in grid {point.ToString()}");
+
+        return _grid[point.Y][point.X].Value;
+    }
+
+    public void UpdateGridPointValue(Point point, T value)
+    {
+        if (ContainsPoint(point) is false) throw new Exception($"Point is not in grid {point.ToString()}");
+
+        var pointSelected = _grid[point.Y].ElementAt(point.Y);
+        pointSelected.Value = value;
+
+        _grid[point.Y][point.X] = pointSelected;
+    }
 }

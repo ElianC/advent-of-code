@@ -1,14 +1,25 @@
+using System.Drawing;
+using AdventOfCode.Utils;
+
 namespace AdventOfCode._2024.Day06;
 
 public class Solution : BaseSolution
 {
-    private readonly List<(Directions, string)> _cellGuardMatchDirection =
+    private readonly List<(Directions, char)> _cellGuardMatchDirection =
     [
-        (Directions.Forward, "^"),
-        (Directions.Right, ">"),
-        (Directions.Backward, "v"),
-        (Directions.Left, "<")
+        (Directions.Forward, '^'),
+        (Directions.Right, '>'),
+        (Directions.Backward, 'v'),
+        (Directions.Left, '<')
     ];
+
+    private readonly Grid<char> _grid;
+
+    public Solution()
+    {
+        _grid = new Grid<char>(GetInput());
+    }
+
 
     private Directions GetNextDirection(Directions dir)
     {
@@ -22,41 +33,38 @@ public class Solution : BaseSolution
         };
     }
 
-    private static ((int x, int y) pos, string cell)? GetNextCellInfos(
-        List<List<string>> input, (int x, int y) pos, Directions dir)
+    private (Point pos, string cell)? GetNextCellInfos(
+        List<List<string>> input, Point pos, Directions dir)
     {
-        (int x, int y) boundaries = (input[0].Count - 1, input.Count - 1);
-        var nextPos = pos;
-
+        Size offset = new();
         switch (dir)
         {
             case Directions.Forward:
-                nextPos.y--;
-                if (nextPos.y < 0) return null;
+                offset = new Size(0, -1);
                 break;
             case Directions.Right:
-                nextPos.x++;
-                if (nextPos.x > boundaries.x) return null;
+                offset = new Size(1, 0);
                 break;
             case Directions.Backward:
-                nextPos.y++;
-                if (nextPos.y > boundaries.y) return null;
+                offset = new Size(0, 1);
                 break;
             case Directions.Left:
-                nextPos.x--;
-                if (nextPos.x < 0) return null;
+                offset = new Size(-1, 0);
                 break;
         }
 
-        return (nextPos, input[nextPos.y][nextPos.x]);
+        var nextPos = pos + offset;
+
+        if (_grid.ContainsPoint(nextPos) is false) return null;
+        return (new Point(nextPos.X, nextPos.Y), input[nextPos.Y][nextPos.X]);
     }
 
-    private List<(int x, int y)> DoGuardRound(List<List<string>> input, (int x, int y) startPos, Directions startDir)
+    private List<Point> DoGuardRound(List<List<string>> input, Point startPos, Directions startDir)
     {
         var guardDir = startDir;
         var guardPos = startPos;
 
-        HashSet<(Directions dir, (int x, int y) pos)> visitedCells = [];
+        HashSet<(Directions dir, Point pos)> visitedCells = [];
 
         do
         {
@@ -85,17 +93,21 @@ public class Solution : BaseSolution
 
     public override void Solve()
     {
-        var input = GetInput()
-            .Split(Environment.NewLine)
-            .Select(row => row.Select(e => e.ToString()).ToList())
-            .ToList();
+        var input = _grid.GetGrid()
+            .Select(e => e.Select(f => f.Value.ToString()).ToList()).ToList();
 
-        var guardPos = input
-            .Select((row, y) => (x: row.FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)), y))
-            .Single(pos => pos is { x: >= 0, y: >= 0 });
+        var guardPos = _grid.GetGrid()
+            .Select((row, y) =>
+            {
+                var x = row
+                    .FindIndex(cell => _cellGuardMatchDirection
+                        .Any(e => e.Item2 == cell.Value));
+                return new Point(x, y);
+            })
+            .Single(pos => pos is { X: >= 0, Y: >= 0 });
 
         var guardDir = _cellGuardMatchDirection
-            .Where(e => e.Item2 == input[guardPos.y][guardPos.x])
+            .Where(e => e.Item2 == _grid.GetGridPointValue(guardPos))
             .Select(e => e.Item1)
             .Single();
 
@@ -109,7 +121,7 @@ public class Solution : BaseSolution
             var localInput = new List<List<string>>(input.Select(e => e.ToList()));
 
             if (visited.Equals(guardPos)) continue;
-            localInput[visited.y][visited.x] = "#";
+            localInput[visited.Y][visited.X] = "#";
 
             try
             {
