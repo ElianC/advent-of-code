@@ -17,39 +17,40 @@ public class Solution : BaseSolution
         ];
 
         var maxSpinPossible = maxSpinsPossible.Max();
+        var minSpinPossible = maxSpinsPossible.Min();
             
-        for (var i = 1; i < maxSpinPossible; i++)
-        {
-            Dictionary<long, (Size offset, int price)> spins = [];
-
-            for (long a = 0; a < i; a++)
+            for (long a = 0; a < maxSpinPossible; a++)
             {
-                spins.Add(a, (offsetA, 3));
-            }           
-            
-            for (long a = i; a < maxSpinPossible - i; a++)
-            {
-                spins.Add(a, (offsetB, 1));
-            }
-            
-            var creditsSpentForTry = 0;
-            var currentPoint = new Point(0, 0);
+                var xa = offsetA.Width * a;
+                var ya = offsetA.Height * a;
                 
-            foreach (var spin in spins)
-            {
-                creditsSpentForTry += spin.Value.price;
-                currentPoint += spin.Value.offset;
-                    
-                var isWiningSpin = winningPoint.X == currentPoint.X && winningPoint.Y == currentPoint.Y;
-
-                if (isWiningSpin && (smallestCreditsAmount is null || creditsSpentForTry < smallestCreditsAmount))
-                {
-                    smallestCreditsAmount = creditsSpentForTry; 
+                if (xa > winningPoint.X || ya > winningPoint.Y) 
                     break;
+
+                var shouldBreak = false;
+                
+                for (long b = 0; b < maxSpinPossible - a; b++)
+                {
+                    var xb = offsetB.Width * b;
+                    var yb = offsetB.Height * b;
+                    var creditsSpentForTry = a * 3 + b;
+                    
+                    if (xb > winningPoint.X || yb > winningPoint.Y) 
+                        break;
+                    if (xa + xb == winningPoint.X && ya + yb == winningPoint.Y)
+                    {
+                        if (smallestCreditsAmount is null || creditsSpentForTry < smallestCreditsAmount)
+                        {
+                            smallestCreditsAmount = creditsSpentForTry;
+                            shouldBreak = true;
+                            break;
+                        }
+                    }
                 }
+
+                if (shouldBreak) break;
             }
-        }
-        
+            
         return smallestCreditsAmount;
     }
     
@@ -78,16 +79,20 @@ public class Solution : BaseSolution
                 .Select(int.Parse)
                 .ToArray();
             
+            Console.WriteLine($"{machineInfos[0]}: {machineInfos[1]}");
+            
             var offsetA = new Size(buttonA[0], buttonA[1]);
             var offsetB = new Size(buttonB[0], buttonB[1]);
             var prizePoint = (prize[0], prize[1]);
 
+           // var offsetWinningPoint = 1;
             var offsetWinningPoint = 10000000000000;
             var prizePointAdjusted = (prize[0] + offsetWinningPoint, prize[1] + offsetWinningPoint);
             
             var creditsSpent = AutoSpin(prizePoint, offsetA, offsetB);
             var creditsSpentAdjusted = AutoSpin(prizePointAdjusted, offsetA, offsetB);
             
+           
            if (creditsSpent is not null)
             {
                 totalCreditsSpent += (long)creditsSpent;
