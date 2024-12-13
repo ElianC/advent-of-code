@@ -1,24 +1,14 @@
-using System.Drawing;
-using AdventOfCode.Utils;
-
 namespace AdventOfCode._2024.Day06;
 
 public class Solution : BaseSolution
 {
-    private readonly List<(Directions, char)> _cellGuardMatchDirection =
+    private readonly List<(Directions, string)> _cellGuardMatchDirection =
     [
-        (Directions.Forward, '^'),
-        (Directions.Right, '>'),
-        (Directions.Backward, 'v'),
-        (Directions.Left, '<')
+        (Directions.Forward, "^"),
+        (Directions.Right, ">"),
+        (Directions.Backward, "v"),
+        (Directions.Left, "<")
     ];
-
-    private readonly Grid<char> _grid;
-
-    public Solution()
-    {
-        _grid = new Grid<char>(GetInput());
-    }
 
     private Directions GetNextDirection(Directions dir)
     {
@@ -32,40 +22,41 @@ public class Solution : BaseSolution
         };
     }
 
-    private (Point pos, char cell)? GetNextCellInfos(Point pos, Directions dir)
+    private static ((int x, int y) pos, string cell)? GetNextCellInfos(
+        List<List<string>> input, (int x, int y) pos, Directions dir)
     {
-        var size = new Size(0, 0);
+        (int x, int y) boundaries = (input[0].Count - 1, input.Count - 1);
+        var nextPos = pos;
 
         switch (dir)
         {
             case Directions.Forward:
-                size = new Size(0, -1);
+                nextPos.y--;
+                if (nextPos.y < 0) return null;
                 break;
             case Directions.Right:
-                size = new Size(1, 0);
+                nextPos.x++;
+                if (nextPos.x > boundaries.x) return null;
                 break;
             case Directions.Backward:
-                size = new Size(0, 1);
+                nextPos.y++;
+                if (nextPos.y > boundaries.y) return null;
                 break;
             case Directions.Left:
-                size = new Size(-1, 0);
+                nextPos.x--;
+                if (nextPos.x < 0) return null;
                 break;
         }
 
-        var nextPos = pos + size;
-
-        if (_grid.ContainsPoint(nextPos) is false) return null;
-        var nextCell = _grid.GetGridPoint(nextPos);
-
-        return (pos: nextCell.Point, cell: nextCell.Value);
+        return (nextPos, input[nextPos.y][nextPos.x]);
     }
 
-    private List<Point> DoGuardRound(Point startPos, Directions startDir)
+    private List<(int x, int y)> DoGuardRound(List<List<string>> input, (int x, int y) startPos, Directions startDir)
     {
         var guardDir = startDir;
         var guardPos = startPos;
 
-        HashSet<(Directions dir, Point pos)> visitedCells = [];
+        HashSet<(Directions dir, (int x, int y) pos)> visitedCells = [];
 
         do
         {
@@ -73,12 +64,12 @@ public class Solution : BaseSolution
                 throw new Exception(
                     "Guard has already patrolled here, he must going around in circles.");
 
-            var nextCell = GetNextCellInfos(guardPos, guardDir);
+            var nextCell = GetNextCellInfos(input, guardPos, guardDir);
 
-            while (nextCell is { cell: '#' })
+            while (nextCell is { cell: "#" })
             {
                 guardDir = GetNextDirection(guardDir);
-                nextCell = GetNextCellInfos(guardPos, guardDir);
+                nextCell = GetNextCellInfos(input, guardPos, guardDir);
             }
 
             if (nextCell is null) break;
@@ -94,39 +85,39 @@ public class Solution : BaseSolution
 
     public override void Solve()
     {
-        var guardPos = _grid.GetGrid()
-            .SelectMany(e => e)
-            .Single(e => _cellGuardMatchDirection
-                .Any(dir => dir.Item2 == e.Value));
+        var input = GetInput()
+            .Split(Environment.NewLine)
+            .Select(row => row.Select(e => e.ToString()).ToList())
+            .ToList();
+
+        var guardPos = input
+            .Select((row, y) => (x: row.FindIndex(cell => _cellGuardMatchDirection.Any(e => e.Item2 == cell)), y))
+            .Single(pos => pos is { x: >= 0, y: >= 0 });
 
         var guardDir = _cellGuardMatchDirection
-            .Where(e => e.Item2 == _grid.GetGridPointValue(guardPos.Point))
+            .Where(e => e.Item2 == input[guardPos.y][guardPos.x])
             .Select(e => e.Item1)
             .Single();
 
-        Console.WriteLine(guardDir);
-        Console.WriteLine(guardPos);
-        var visitedCells = DoGuardRound(guardPos.Point, guardDir);
+        var visitedCells = DoGuardRound(input, guardPos, guardDir);
 
         var solution1 = visitedCells.Count;
         var solution2 = 0;
 
         foreach (var visited in visitedCells)
         {
-            if (visited == guardPos.Point) continue;
+            var localInput = new List<List<string>>(input.Select(e => e.ToList()));
+
+            if (visited.Equals(guardPos)) continue;
+            localInput[visited.y][visited.x] = "#";
 
             try
             {
-                _grid.UpdateGridPointValue(visited, '#');
-                DoGuardRound(guardPos.Point, guardDir);
+                DoGuardRound(localInput, guardPos, guardDir);
             }
             catch (Exception)
             {
                 solution2++;
-            }
-            finally
-            {
-                _grid.UpdateGridPointValue(visited, '.');
             }
         }
 
