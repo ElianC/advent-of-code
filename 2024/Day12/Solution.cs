@@ -24,7 +24,7 @@ public class Solution : BaseSolution
             .Select(size => cellToCheck + size)
             .Where(point => !CellsAlreadyGrouped.Contains(point))
             .Where(point => _grid.ContainsPoint(point))
-            .Where(point => _grid[point.Y][point.X].value == target)
+            .Where(point => _grid[point.Y][point.X].Value == target)
             .ToList();
 
         foreach (var neightboorPoint in neighbourCells)
@@ -43,11 +43,11 @@ public class Solution : BaseSolution
 
         foreach (var cell in _grid.GetGrid().SelectMany(row => row))
         {
-            if (!CellsAlreadyGrouped.Add(cell.point)) continue;
+            if (!CellsAlreadyGrouped.Add(cell.Point)) continue;
 
             var newIndex = id++;
-            _dict.TryAdd(newIndex, (cell.value, [cell.point]));
-            CheckAdjacentCells(cell.point, cell.value, newIndex);
+            _dict.TryAdd(newIndex, (cell.Value, [cell.Point]));
+            CheckAdjacentCells(cell.Point, cell.Value, newIndex);
         }
 
         foreach (var elem in _dict)
@@ -59,7 +59,7 @@ public class Solution : BaseSolution
                     .Where(el =>
                     {
                         if (_grid.ContainsPoint(el))
-                            return _grid[el.Y][el.X].value != elem.Value.cell;
+                            return _grid[el.Y][el.X].Value != elem.Value.cell;
                         return true;
                     })
                     .Count()
@@ -77,7 +77,7 @@ public class Solution : BaseSolution
 
     private int GetCountEdges(Point cell)
     {
-        var value = _grid[cell.Y][cell.X].value;
+        var value = _grid[cell.Y][cell.X].Value;
 
         var directNeighbors = NeighbourCellsOffset
             .Select(coord => cell + coord)
@@ -90,7 +90,7 @@ public class Solution : BaseSolution
         char GetCellValue(Point point)
         {
             if (_grid.ContainsPoint(point))
-                return _grid[point.Y][point.X].value;
+                return _grid[point.Y][point.X].Value;
             return ' ';
         }
 

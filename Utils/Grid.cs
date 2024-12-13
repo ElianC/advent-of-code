@@ -4,7 +4,7 @@ namespace AdventOfCode.Utils;
 
 public class Grid<T>
 {
-    private readonly List<List<(Point point, T value)>> _grid;
+    private readonly List<List<(Point Point, T Value)>> _grid;
 
     public Grid(string input)
     {
@@ -21,8 +21,8 @@ public class Grid<T>
             .ToList();
     }
 
-    public List<(Point point, T value)> this[int row] => _grid[row].ToList();
-    public T this[int row, int col] => _grid[row][col].value;
+    public List<(Point Point, T Value)> this[int row] => _grid[row].ToList();
+    public T this[int row, int col] => _grid[row][col].Value;
 
     public bool ContainsPoint(Point p)
     {
@@ -30,7 +30,7 @@ public class Grid<T>
         return p.Y >= 0 && p.Y < _grid.Count;
     }
 
-    public List<List<(Point point, T value)>> GetGrid()
+    public List<List<(Point Point, T Value)>> GetGrid()
     {
         return _grid;
     }
