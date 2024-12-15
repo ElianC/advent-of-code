@@ -27,16 +27,13 @@ public class Solution : BaseSolution
             .ToList();
 
         var timeLeft = 10000;
-        var easterBunnyHeadquarter = GenerateDictionnary(boundaries, robotsLocations, timeLeft);
+        var timeSpent = 1;
+        var timeSpentToFindChristmasTree = 0;
 
-        var i = 0;
-        for (; timeLeft > 0; timeLeft--)
+        var easterBunnyHeadquarter = GenerateDictionnary(boundaries, robotsLocations);
+        Dictionary<Point, List<Size>> response1Dict = new();
+        for (; timeSpent <= timeLeft; timeSpent++)
         {
-            ++i;
-
-            //Thread.Sleep(7000);
-
-
             List<(Point pos, Size vel)> newRobotPos = [];
 
             var robotsLoc = easterBunnyHeadquarter
@@ -48,7 +45,8 @@ public class Solution : BaseSolution
             foreach (var robotVel in robotLoc.Value)
             {
                 var newLoc = robotLoc.Key + robotVel;
-                if (newLoc.X >= 0 && newLoc.Y >= 0 && newLoc.X < boundaries.X && newLoc.Y < boundaries.Y)
+
+                if (newLoc is { X: >= 0, Y: >= 0 } && newLoc.X < boundaries.X && newLoc.Y < boundaries.Y)
                 {
                     newRobotPos.Add((newLoc, robotVel));
                 }
@@ -56,39 +54,28 @@ public class Solution : BaseSolution
                 {
                     var posX = newLoc.X;
                     var posY = newLoc.Y;
-                    if (posX < 0)
-                    {
-                        var test = boundaries.X + posX;
-                        posX = test;
-                    }
 
-                    if (posX >= boundaries.X)
-                    {
-                        var test = posX - boundaries.X;
-                        posX = test;
-                    }
-
-                    if (posY < 0)
-                    {
-                        var test = boundaries.Y + posY;
-                        posY = test;
-                    }
-
-                    if (posY >= boundaries.Y)
-                    {
-                        var test = posY - boundaries.Y;
-                        posY = test;
-                    }
-
+                    if (posX < 0) posX = boundaries.X + posX;
+                    if (posX >= boundaries.X) posX = posX - boundaries.X;
+                    if (posY < 0) posY = boundaries.Y + posY;
+                    if (posY >= boundaries.Y) posY = posY - boundaries.Y;
 
                     newRobotPos.Add((new Point(posX, posY), robotVel));
                 }
             }
 
-            easterBunnyHeadquarter = GenerateDictionnary(boundaries, newRobotPos, timeLeft);
-        }
+            try
+            {
+                easterBunnyHeadquarter = GenerateDictionnary(boundaries, newRobotPos);
+            }
+            catch (Exception)
+            {
+                timeSpentToFindChristmasTree = timeSpent;
+                break;
+            }
 
-        var countRobots = 0;
+            if (timeSpent == 100) response1Dict = easterBunnyHeadquarter;
+        }
 
         var semiBoundaryX = (boundaries.X - 1) / 2;
         var semiBoundaryY = (boundaries.Y - 1) / 2;
@@ -107,8 +94,7 @@ public class Solution : BaseSolution
         var quad3Count = 0;
         var quad4Count = 0;
 
-        foreach (var robot in easterBunnyHeadquarter)
-        {
+        foreach (var robot in response1Dict)
             if (robot.Value.Any())
             {
                 if (AreInBoundaries(robot.Key, quad1Min, quad1Max)) quad1Count += robot.Value.Count();
@@ -120,10 +106,8 @@ public class Solution : BaseSolution
                 if (AreInBoundaries(robot.Key, quad4Min, quad4Max)) quad4Count += robot.Value.Count();
             }
 
-            countRobots += robot.Value.Count;
-        }
-
-        Console.WriteLine($"robots count: {quad1Count * quad2Count * quad3Count * quad4Count}");
+        Console.WriteLine($"Safety factor: {quad1Count * quad2Count * quad3Count * quad4Count}");
+        Console.WriteLine($"Time Spent to find the Easter eggs: {timeSpentToFindChristmasTree}");
     }
 
     private bool AreInBoundaries(Point point, Point boundariesMin, Point boundariesMax)
@@ -133,38 +117,32 @@ public class Solution : BaseSolution
         return false;
     }
 
-    private Dictionary<Point, List<Size>> GenerateDictionnary(Point boundaries,
-        List<(Point pos, Size vel)> robotsLocations, int timeLeft)
+    private Dictionary<Point, List<Size>> GenerateDictionnary(Point localBoundaries,
+        List<(Point pos, Size vel)> robotsLocations)
     {
         Dictionary<Point, List<Size>> easterBunnyHeadquarter = new();
 
         List<string> rows = [];
 
-        var displayTree = false;
         var points = robotsLocations.Select(e => e.pos).ToList();
 
         var offsetX = new Size(1, 1);
         var offsetY = new Size(0, 1);
 
-        foreach (var point in points)
-        {
-            var nextPoints = Enumerable.Range(1, 5).Select(y =>
-                Enumerable.Range(1, 5).Select(x => { return point + y * offsetY + x * offsetX; }));
+        var displayTree = points
+            .Select(point => Enumerable.Range(1, 5)
+                .Select(y => Enumerable.Range(1, 5)
+                    .Select(x => point + y * offsetY + x * offsetX)))
+            .Any(nextPoints =>
+                nextPoints
+                    .All(p => p
+                        .All(pt => points.Contains(pt))));
 
-            if (nextPoints.All(p => p.All(pt => points.Contains(pt))))
-            {
-                displayTree = true;
-                break;
-            }
-        }
-
-        var pointsAside = 0;
-
-        for (var y = 0; y < boundaries.Y; y++)
+        for (var y = 0; y < localBoundaries.Y; y++)
         {
             var row = "";
 
-            for (var x = 0; x < boundaries.X; x++)
+            for (var x = 0; x < localBoundaries.X; x++)
             {
                 var point = new Point(x, y);
                 var robotsVel = robotsLocations
@@ -172,7 +150,7 @@ public class Solution : BaseSolution
                     .ToList();
 
                 if (robotsVel.Any())
-                    row += robotsVel.Count();
+                    row += robotsVel.Count;
                 else
                     row += " ";
 
@@ -184,9 +162,9 @@ public class Solution : BaseSolution
 
         if (displayTree)
         {
-            Console.WriteLine($"---------------- Time spent : {timeLeft} ----------------");
-            foreach (var row in rows) Console.WriteLine($"Dictionnary: {row}");
-            Console.WriteLine("------------------------------------------------");
+            foreach (var row in rows) Console.WriteLine($"{row}");
+
+            throw new Exception("three found");
         }
 
         return easterBunnyHeadquarter;
