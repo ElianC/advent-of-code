@@ -195,7 +195,7 @@ public class Solution : BaseSolution
         var nextGuardPos = _guardPos2 + movement;
 
         var nextCellValue = _warehouse2.GetGridPoint(nextGuardPos);
-        //Debug();
+        Debug();
 
         switch (nextCellValue.Value)
         {
@@ -234,6 +234,7 @@ public class Solution : BaseSolution
 
     public void Debug()
     {
+        var output = "";
         foreach (var row in _warehouse2.GetGrid())
         {
             var line = "";
@@ -241,9 +242,12 @@ public class Solution : BaseSolution
                 if (cell.Point == _guardPos2) line += '@';
                 else line += cell.Value;
 
-            Console.WriteLine(line);
+            output += line + "\n";
         }
 
-        Console.WriteLine("");
+        Console.Clear();
+
+        Console.Write("\r{0}", output);
+        Thread.Sleep(100);
     }
 }
