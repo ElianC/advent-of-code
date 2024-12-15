@@ -129,10 +129,8 @@ public class Solution : BaseSolution
 
     private void TryMoveBoxes2(Point startPos, Size direction)
     {
-        Console.WriteLine($"{direction} {startPos} {startPos - direction}");
         if (direction.Width != 0)
         {
-            Console.WriteLine("move horizontal ");
             var isBoxMoveable = false;
             var nextCellBox = startPos;
             char valueCell;
@@ -164,15 +162,11 @@ public class Solution : BaseSolution
         }
         else
         {
-            Console.WriteLine("move vertical");
-
             var isBoxMoveable = IsBoxMoveable2(startPos, direction);
             if (isBoxMoveable)
             {
                 TryMoveBox2(startPos, direction);
-                //
                 _guardPos2 = startPos;
-                ;
             }
         }
     }
