@@ -5,13 +5,6 @@ namespace AdventOfCode._2024.Day15;
 
 public class Solution : BaseSolution
 {
-    public enum WareHouseElements
-    {
-        Wall = '#',
-        Floor = '.',
-        Box = 'O'
-    }
-
     private readonly List<Size> _movements;
     private readonly Grid<char> _warehouse;
     private Point _guardPos;
@@ -42,6 +35,28 @@ public class Solution : BaseSolution
             .ToList();
     }
 
+    private void TryMoveBoxes(Point startPos, Size movement)
+    {
+        var isBoxMoveable = false;
+        var nextCellBox = startPos;
+        char valueCell;
+
+        do
+        {
+            nextCellBox += movement;
+            valueCell = _warehouse.GetGridPointValue(nextCellBox);
+
+            if (valueCell == '.') isBoxMoveable = true;
+        } while (valueCell is 'O');
+
+        if (isBoxMoveable)
+        {
+            _warehouse.UpdateGridPointValue(startPos, '.');
+            _warehouse.UpdateGridPointValue(nextCellBox, 'O');
+            _guardPos = startPos;
+        }
+    }
+
     public override void Solve()
     {
         foreach (var movement in _movements)
@@ -52,53 +67,14 @@ public class Solution : BaseSolution
             switch (nextCellValue.Value)
             {
                 case '.':
-                {
                     _guardPos = nextGuardPos;
-
                     break;
-                }
                 case '#':
-                {
                     break;
-                }
                 case 'O':
-                {
-                    var isBoxMoveable = false;
-                    var nextCellBox = nextGuardPos;
-                    char valueCell;
-
-                    do
-                    {
-                        nextCellBox += movement;
-                        valueCell = _warehouse.GetGridPointValue(nextCellBox);
-
-                        if (valueCell == '.') isBoxMoveable = true;
-                    } while (valueCell is 'O');
-
-                    if (isBoxMoveable)
-                    {
-                        _warehouse.UpdateGridPointValue(nextGuardPos, '.');
-                        _warehouse.UpdateGridPointValue(nextCellBox, 'O');
-                        _guardPos = nextGuardPos;
-                    }
-
+                    TryMoveBoxes(nextGuardPos, movement);
                     break;
-                }
             }
-        }
-
-        foreach (var row in _warehouse.GetGrid())
-        {
-            var _row = "";
-            foreach (var VARIABLE in row)
-            {
-                _row += VARIABLE.Value;
-                ;
-            }
-
-            ;
-
-            Console.WriteLine(_row);
         }
 
         var response1 = _warehouse.GetGrid()
