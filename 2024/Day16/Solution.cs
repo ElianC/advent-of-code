@@ -3,8 +3,18 @@ using AdventOfCode.Utils;
 
 namespace AdventOfCode._2024.Day16;
 
+public class TreeNode
+{
+    public Point Value { get; set; }
+    public TreeNode? Branch1 { get; set; }
+    public TreeNode? Branch2 { get; set; }
+    public TreeNode? Branch3 { get; set; }
+    public TreeNode? Branch4 { get; set; }
+}
+
 public class Solution : BaseSolution
 {
+    private readonly HashSet<Point> _deadEnds = [];
     private readonly Point _end;
     private readonly HashSet<Point> _exploredCells = [];
     private readonly Grid<char> _grid;
@@ -37,34 +47,36 @@ public class Solution : BaseSolution
             .Single();
     }
 
+    public TreeNode? AddLeafs(Point? point)
+    {
+        if (point == _end) return new TreeNode { Value = _end };
+        if (point == null) return null;
 
-    /*
-        Breadth-first search
+        var adjacentsPoints = GetAdjacentCells(point.Value);
+        if (!adjacentsPoints.Any()) return null;
 
-        1  procedure BFS(G, root) is
-        2      let Q be a queue
-        3      label root as explored
-        4      Q.enqueue(root)
-        5      while Q is not empty do
-        6          v := Q.dequeue()
-        7          if v is the goal then
-        8              return v
-        9          for all edges from v to w in G.adjacentEdges(v) do
-        10              if w is not labeled as explored then
-        11                  label w as explored
-        12                  w.parent := v
-        13                  Q.enqueue(w)
-    */
+        _exploredCells.Add(point.Value);
+        return new TreeNode
+        {
+            Value = point.Value,
+            Branch1 = adjacentsPoints.Count >= 1 ? AddLeafs(adjacentsPoints[0]) : null,
+            Branch2 = adjacentsPoints.Count >= 2 ? AddLeafs(adjacentsPoints[1]) : null,
+            Branch3 = adjacentsPoints.Count >= 3 ? AddLeafs(adjacentsPoints[2]) : null,
+            Branch4 = adjacentsPoints.Count == 4 ? AddLeafs(adjacentsPoints[3]) : null
+        };
+    }
+
     private List<Point> GetAdjacentCells(Point point)
     {
         return _offsets
             .Select(off => _grid.GetGridPoint(point + off))
+            .Where(el => !_exploredCells.Contains(el.Point))
             .Where(el => el.Value != '#')
             .Select(el => el.Point)
             .ToList();
     }
 
-    private void FindBestPathMaze(Point start)
+    private bool CanReachEnd(Point start)
     {
         Queue<Point> queue = new();
         _exploredCells.Add(start);
@@ -74,7 +86,7 @@ public class Solution : BaseSolution
         {
             var point = queue.Dequeue();
             if (point == _end)
-                break;
+                return true;
 
             var adjacentCells = GetAdjacentCells(point);
             foreach (var adjacentCell in adjacentCells)
@@ -84,12 +96,53 @@ public class Solution : BaseSolution
                     queue.Enqueue(adjacentCell);
                 }
         }
+
+        return false;
+    }
+
+    public bool CheckTreeLeafs(TreeNode node)
+    {
+        if (node == null) return false;
+
+        if (node.Value == _end) return true;
+
+        Console.WriteLine(node.Value);
+        Console.WriteLine("hello world");
+        var answer = false;
+        if (node.Branch1 != null)
+        {
+            var testTree = CheckTreeLeafs(node.Branch1);
+            if (testTree) return true;
+        }
+
+        if (node.Branch2 != null)
+        {
+            var testTree = CheckTreeLeafs(node.Branch2);
+            if (testTree) return true;
+        }
+
+        if (node.Branch3 != null)
+        {
+            var testTree = CheckTreeLeafs(node.Branch3);
+            if (testTree) return true;
+        }
+
+        if (node.Branch4 != null)
+        {
+            var testTree = CheckTreeLeafs(node.Branch4);
+            if (testTree) return true;
+        }
+
+        return false;
     }
 
     public override void Solve()
     {
-        FindBestPathMaze(_start);
+        //CanReachEnd(_start);
+        var tree = AddLeafs(_start);
+        CheckTreeLeafs(tree);
 
+        /*
         var currentPoint = _visitedPoints[_end];
 
         while (currentPoint != _start)
@@ -97,6 +150,7 @@ public class Solution : BaseSolution
             Debug(currentPoint);
             currentPoint = _visitedPoints[currentPoint];
         }
+        */
     }
 
     private void Debug(Point point)
